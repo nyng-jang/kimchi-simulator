@@ -1,0 +1,308 @@
+{
+  "ingredients": [
+    {
+      "k": "cabbage",
+      "n": "절임배추",
+      "g": "basic",
+      "d": "김치의 기본",
+      "st": {
+        "cool": 1
+      },
+      "model": "ingredients/cabbage.glb",
+      "thumbnail": "ingredients/cabbage.png"
+    },
+    {
+      "k": "radish",
+      "n": "무",
+      "g": "basic",
+      "d": "시원 아삭",
+      "st": {
+        "sweet": 1,
+        "cool": 2
+      },
+      "model": "ingredients/radish.glb",
+      "thumbnail": "ingredients/radish.png"
+    },
+    {
+      "k": "mustard",
+      "n": "갓",
+      "g": "basic",
+      "d": "톡 쏘는 향",
+      "st": {
+        "spicy": 1
+      },
+      "model": "ingredients/mustard.glb",
+      "thumbnail": "ingredients/mustard.png"
+    },
+    {
+      "k": "leek",
+      "n": "대파",
+      "g": "basic",
+      "d": "알싸함",
+      "st": {
+        "spicy": 1
+      },
+      "model": "ingredients/leek.glb",
+      "thumbnail": "ingredients/leek.png"
+    },
+    {
+      "k": "chive",
+      "n": "부추",
+      "g": "basic",
+      "d": "향긋",
+      "st": {
+        "spicy": 1
+      },
+      "model": "ingredients/chive.glb",
+      "thumbnail": "ingredients/chive.png"
+    },
+    {
+      "k": "water",
+      "n": "미나리",
+      "g": "basic",
+      "d": "상큼한 향",
+      "st": {
+        "cool": 1
+      },
+      "model": "ingredients/water.glb",
+      "thumbnail": "ingredients/water.png"
+    },
+    {
+      "k": "onion",
+      "n": "양파",
+      "g": "basic",
+      "d": "달큰 매콤",
+      "st": {
+        "sweet": 1,
+        "spicy": 1
+      },
+      "model": "ingredients/onion.glb",
+      "thumbnail": "ingredients/onion.png"
+    },
+    {
+      "k": "pear",
+      "n": "배",
+      "g": "basic",
+      "d": "단맛과 시원함",
+      "st": {
+        "sweet": 2,
+        "cool": 1
+      },
+      "model": "ingredients/pear.glb",
+      "thumbnail": "ingredients/pear.png"
+    },
+    {
+      "k": "cucumber",
+      "n": "오이",
+      "g": "basic",
+      "d": "아삭 시원",
+      "st": {
+        "cool": 2
+      },
+      "model": "ingredients/cucumber.glb",
+      "thumbnail": "ingredients/cucumber.png"
+    },
+    {
+      "k": "oyster",
+      "n": "굴",
+      "g": "basic",
+      "d": "바다의 감칠맛",
+      "st": {
+        "umami": 2,
+        "salty": 1
+      },
+      "model": "ingredients/oyster.glb",
+      "thumbnail": "ingredients/oyster.png"
+    },
+    {
+      "k": "watermelon",
+      "n": "수박",
+      "g": "weird",
+      "d": "여름 그 자체",
+      "st": {
+        "sweet": 2,
+        "cool": 1,
+        "weird": 2
+      },
+      "model": "ingredients/watermelon.glb",
+      "thumbnail": "ingredients/watermelon.png"
+    },
+    {
+      "k": "dujjon",
+      "n": "두쫀쿠",
+      "g": "weird",
+      "d": "두바이 쫀득 쿠키",
+      "st": {
+        "sweet": 3,
+        "weird": 3
+      },
+      "model": "ingredients/dujjon.glb",
+      "thumbnail": "ingredients/dujjon.png"
+    },
+    {
+      "k": "mintchoco",
+      "n": "민트초코",
+      "g": "weird",
+      "d": "호불호 끝판왕",
+      "st": {
+        "sweet": 2,
+        "cool": 1,
+        "weird": 3
+      },
+      "model": "ingredients/mintchoco.glb",
+      "thumbnail": "ingredients/mintchoco.png"
+    },
+    {
+      "k": "cheese",
+      "n": "치즈",
+      "g": "weird",
+      "d": "쭈욱 늘어나요",
+      "st": {
+        "umami": 1,
+        "weird": 2
+      },
+      "model": "ingredients/cheese.glb",
+      "thumbnail": "ingredients/cheese.png"
+    },
+    {
+      "k": "pineapple",
+      "n": "파인애플",
+      "g": "weird",
+      "d": "김치에 파인애플?",
+      "st": {
+        "sweet": 2,
+        "weird": 2
+      },
+      "model": "ingredients/pineapple.glb",
+      "thumbnail": "ingredients/pineapple.png"
+    }
+  ],
+  "seasonings": [
+    {
+      "k": "gochu",
+      "n": "고춧가루",
+      "st": {
+        "spicy": 1
+      },
+      "weird": false,
+      "model": "seasonings/gochu.glb",
+      "thumbnail": "seasonings/gochu.png"
+    },
+    {
+      "k": "garlic",
+      "n": "다진 마늘",
+      "st": {
+        "spicy": 0.5,
+        "umami": 0.5
+      },
+      "weird": false,
+      "model": "seasonings/garlic.glb",
+      "thumbnail": "seasonings/garlic.png"
+    },
+    {
+      "k": "ginger",
+      "n": "생강",
+      "st": {
+        "spicy": 0.5
+      },
+      "weird": false,
+      "model": "seasonings/ginger.glb",
+      "thumbnail": "seasonings/ginger.png"
+    },
+    {
+      "k": "shrimp",
+      "n": "새우젓",
+      "st": {
+        "salty": 1,
+        "umami": 1
+      },
+      "weird": false,
+      "model": "seasonings/shrimp.glb",
+      "thumbnail": "seasonings/shrimp.png"
+    },
+    {
+      "k": "fishsauce",
+      "n": "멸치액젓",
+      "st": {
+        "salty": 1,
+        "umami": 1.5
+      },
+      "weird": false,
+      "model": "seasonings/fishsauce.glb",
+      "thumbnail": "seasonings/fishsauce.png"
+    },
+    {
+      "k": "salt",
+      "n": "천일염",
+      "st": {
+        "salty": 1.5
+      },
+      "weird": false,
+      "model": "seasonings/salt.glb",
+      "thumbnail": "seasonings/salt.png"
+    },
+    {
+      "k": "sugar",
+      "n": "설탕",
+      "st": {
+        "sweet": 1
+      },
+      "weird": false,
+      "model": "seasonings/sugar.glb",
+      "thumbnail": "seasonings/sugar.png"
+    },
+    {
+      "k": "maesil",
+      "n": "매실청",
+      "st": {
+        "sweet": 1
+      },
+      "weird": false,
+      "model": "seasonings/maesil.glb",
+      "thumbnail": "seasonings/maesil.png"
+    },
+    {
+      "k": "rice",
+      "n": "찹쌀풀",
+      "st": {
+        "umami": 0.3
+      },
+      "weird": false,
+      "model": "seasonings/rice.glb",
+      "thumbnail": "seasonings/rice.png"
+    },
+    {
+      "k": "mayo",
+      "n": "마요네즈",
+      "st": {
+        "umami": 0.5,
+        "weird": 1.5
+      },
+      "weird": true,
+      "model": "seasonings/mayo.glb",
+      "thumbnail": "seasonings/mayo.png"
+    },
+    {
+      "k": "choco",
+      "n": "초코시럽",
+      "st": {
+        "sweet": 1.5,
+        "weird": 1.5
+      },
+      "weird": true,
+      "model": "seasonings/choco.glb",
+      "thumbnail": "seasonings/choco.png"
+    },
+    {
+      "k": "cola",
+      "n": "콜라",
+      "st": {
+        "sweet": 1,
+        "weird": 1
+      },
+      "weird": true,
+      "model": "seasonings/cola.glb",
+      "thumbnail": "seasonings/cola.png"
+    }
+  ]
+}

@@ -125,8 +125,6 @@ button{font-family:'Jua',sans-serif;cursor:pointer;border:none}
 #dex .close{position:absolute;right:26px;top:22px}
 #toast{position:absolute;top:150px;left:50%;transform:translateX(-50%) scale(.8);background:#ffcf3f;color:#5a3000;font-family:'Jua';font-size:24px;padding:10px 26px;border-radius:30px;opacity:0;transition:all .3s;z-index:60;pointer-events:none;box-shadow:0 5px 16px rgba(0,0,0,.25)}
 #toast.show{opacity:1;transform:translateX(-50%) scale(1)}
-#fade{position:absolute;inset:0;background:#f4e6cf;opacity:0;pointer-events:none;transition:opacity .35s;z-index:45}
-#fade.on{opacity:1}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Jua';font-size:28px;color:#7a3b1f;background:#efe2cc;z-index:99}
 </style>
 </head>
@@ -206,7 +204,6 @@ button{font-family:'Jua',sans-serif;cursor:pointer;border:none}
     <div class="dgrid" id="dexRecent" style="margin-top:10px"></div>
   </div></div>
 
-  <div id="fade"></div>
   <div id="toast"></div>
   <div id="loading">김장 준비 중…</div>
 </div></div>
@@ -943,21 +940,20 @@ function stepCamTween(dt){if(!CAMTW)return;const c=CAMTW;c.t+=dt;const k=Math.mi
   camera.position.lerpVectors(c.fp,c.tp,e);camera.lookAt(c.fl.clone().lerp(c.tl,e));if(c.onStep)c.onStep(k);
   if(k>=1){CAMTW=null;if(c.onDone)c.onDone();}}
 function eyeOf(C){const v=new THREE.Vector3();C.j.head.getWorldPosition(v);v.y+=0.12;v.z+=0.08;return v;}
-function setFade(on){$('fade').classList.toggle('on',on);}
 // 재료 고르기 → 손질: 주인공 눈으로 날아 들어가 대야를 내려다본 뒤 1인칭 도마로
 function camEnterToCut(){if(CAMTW)return;$('select').classList.remove('on');$('steps').classList.remove('on');frameFn=(dt)=>stepPhysics(dt);
   PLAYER.setPose('look');PLAYER.setExpr('smile');PLAYER.say(0.8);
   const base=camera.userData.base,eye=eyeOf(PLAYER);
   camTween(base.p,base.l,[eye.x,eye.y,eye.z],[TUB.x,TUB.y,TUB.z],1.35,()=>{
       go('cut');PLAYER.root.visible=true;camera.fov=48;camera.updateProjectionMatrix();
-      camTween([0.15,4.6,3.6],[0.3,0.3,-0.2],[0.2,3.7,3.1],[0.3,0,-0.35],0.9);setTimeout(()=>setFade(false),60);},
-    (k)=>{if(k>0.62)PLAYER.root.visible=false;if(k>0.72)setFade(true);camera.fov=40+8*k;camera.updateProjectionMatrix();});}
+      camTween([0.15,4.6,3.6],[0.3,0.3,-0.2],[0.2,3.7,3.1],[0.3,0,-0.35],0.9);},
+    (k)=>{if(k>0.62)PLAYER.root.visible=false;camera.fov=40+8*k;camera.updateProjectionMatrix();});}
 // 버무리기 → 보관: 1인칭에서 주인공 눈으로 빠져나와 3인칭으로
-function camExitToStore(){if(CAMTW)return;setFade(true);
-  setTimeout(()=>{go('store');$('store').style.opacity=0;PLAYER.root.visible=false;const base=camera.userData.base,eye=eyeOf(PLAYER);
+function camExitToStore(){if(CAMTW)return;
+  (()=>{go('store');$('store').style.opacity=0;PLAYER.root.visible=false;const base=camera.userData.base,eye=eyeOf(PLAYER);
     camera.fov=48;camTween([eye.x,eye.y,eye.z],[0,1.1,0.4],base.p,base.l,1.3,()=>{camera.fov=42;camera.updateProjectionMatrix();$('store').style.transition='opacity .3s';$('store').style.opacity=1;},
       (k)=>{if(k>0.28)PLAYER.root.visible=true;camera.fov=48-6*k;camera.updateProjectionMatrix();});
-    setTimeout(()=>setFade(false),80);},380);}
+  })();}
 
 /* ---------- STORE ---------- */
 const STORE_X={now:-0.9,box:0,onggi:0.9};
