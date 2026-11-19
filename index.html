@@ -149,9 +149,9 @@ button{font-family:'Jua',sans-serif;cursor:pointer;border:none}
     <div class="panel" id="ingPanel">
       <h3>🥬 기본 김장 재료</h3><div class="grid" id="gridBasic"></div>
       <h3>✨ 엉뚱한 재료</h3><div class="grid" id="gridWeird"></div>
-      <div class="hint">누르면 바구니에 담기고, 한 번 더 누르면 빠져요. 무슨 맛이 날지는 할머니만 알아요!</div>
+      <div class="hint">누르면 하늘에서 대야로 떨어지고, 한 번 더 누르면 빠져요. 무슨 맛이 날지는 할머니만 알아요!</div>
     </div>
-    <div class="selBar"><span class="cnt" id="bCount">바구니 0 / 6</span><button class="btn" id="btnToCut" disabled>손질하러 가기 ▶</button></div>
+    <div class="selBar"><span class="cnt" id="bCount">대야 0 / 6</span><button class="btn" id="btnToCut" disabled>손질하러 가기 ▶</button></div>
   </div>
 
   <div class="screen" id="cut">
@@ -866,25 +866,70 @@ $('introDlg').onclick=()=>{SFX.click();introI++;if(introI>=INTRO.length){GRANDMA
 
 /* ---------- SELECT ---------- */
 const SEL_LINES={cabbage:['배추는 기본이지!','smile'],radish:['무 넣으면 시원하겠다~','smile'],watermelon:['수박…? 해보는 거야!','laugh'],dujjon:['두쫀쿠 김치라니 ㅋㅋ','laugh'],mintchoco:['민초 김치… 괜찮을까?','worry'],cheese:['치즈 김치는 맛있을 듯?','laugh'],pineapple:['파인애플도 가 보자!','laugh'],oyster:['굴 넣으면 할머니 김치 맛!','smile']};
-const SLOT_X=[-0.9,-0.55,-0.2,0.15,0.5,0.85];
-function enterSelect(){scene=K3.scene;K3.items.clear();PLAYER.root.rotation.y=0;PLAYER.setPose('idle');PLAYER.setExpr('smile');PLAYER.look=0;
-  setCam([0.95,1.72,2.45],[0.95,1.28,0],40);
+/* ---------- 대야 + 낙하 물리 (재료 무게에 따라 튕겨 나감) ---------- */
+const WEIGHT={cabbage:3,radish:2.4,mustard:0.3,leek:0.4,chive:0.2,water:0.25,onion:1,pear:1.4,cucumber:0.8,oyster:0.3,watermelon:8,dujjon:0.6,mintchoco:0.7,cheese:0.8,pineapple:2.6};
+const BOUNCE={watermelon:0.35,cabbage:0.3,radish:0.35,dujjon:0.6,mintchoco:0.5,cheese:0.45,pineapple:0.4,oyster:0.5};
+const SIZE={watermelon:0.3,cabbage:0.28,pineapple:0.26,radish:0.26};
+const TUB={x:0.32,y:0.93,z:0.5,r:0.4,h:0.26};
+const TUB_RB=TUB.r*0.6, TUB_RT=TUB.r*0.96, TUB_FLOOR=TUB.y+0.06, TUB_TOP=TUB.y+TUB.h;
+const GRAV=-6.2;
+let BODIES=[];
+function tubR(y){const t=Math.max(0,Math.min(1,(y-TUB_FLOOR)/(TUB_TOP-TUB_FLOOR)));return TUB_RB+(TUB_RT-TUB_RB)*t;}
+function spawnBody(k,fromSky){const m=wholeModel(ING[k]);const bb=new THREE.Box3().setFromObject(m),sz=bb.getSize(new THREE.Vector3());
+  const s=(SIZE[k]||0.24)/Math.max(sz.x,sz.y,sz.z);m.scale.setScalar(s);
+  const dims=[sz.x*s,sz.y*s,sz.z*s].sort((p,q)=>p-q);const r=Math.max(0.035,Math.cbrt(dims[0]*dims[1]*dims[2])*0.62);
+  const ang=Math.random()*Math.PI*2,off=Math.random()*0.12;
+  const p=new THREE.Vector3(TUB.x+Math.cos(ang)*off,fromSky?2.9+Math.random()*0.3:TUB_FLOOR+r+BODIES.length*0.05,TUB.z+Math.sin(ang)*off);
+  m.position.copy(p);m.rotation.set(Math.random()*3,Math.random()*3,Math.random()*3);shadowAll(m);K3.items.add(m);
+  const body={k,m,p,v:new THREE.Vector3(rnd(-.2,.2),fromSky?-0.5:0,rnd(-.2,.2)),w:new THREE.Vector3(rnd(-4,4),rnd(-4,4),rnd(-4,4)),r,mass:WEIGHT[k]||1,e:BOUNCE[k]||0.5,inside:true,landed:!fromSky,out:false};
+  BODIES.push(body);return body;}
+function removeBody(k){const i=BODIES.findIndex(b=>b.k===k);if(i<0)return;const b=BODIES[i];K3.items.remove(b.m);BODIES.splice(i,1);}
+function splash(src){ // 무거운 재료가 떨어지면 주변 재료를 튕겨 냄
+  BODIES.forEach(o=>{if(o===src)return;const d=o.p.distanceTo(src.p);if(d>0.55)return;const f=src.mass/(o.mass+0.3)*(1-d/0.55);
+    const out=new THREE.Vector3(o.p.x-TUB.x,0,o.p.z-TUB.z);if(out.lengthSq()<1e-4)out.set(rnd(-1,1),0,rnd(-1,1));out.normalize();
+    o.v.y+=f*0.42;o.v.addScaledVector(out,f*0.3);o.w.set(rnd(-1,1),rnd(-1,1),rnd(-1,1)).multiplyScalar(f*6);});
+  if(src.mass>=2.4){SFX.boing();PLAYER.flash('surprise',1.0);}}
+function stepPhysics(dt){const n=4,h=dt/n;
+  for(let s=0;s<n;s++){
+    BODIES.forEach(b=>{b.v.y+=GRAV*h;b.p.addScaledVector(b.v,h);
+      const dx=b.p.x-TUB.x,dz=b.p.z-TUB.z,d=Math.hypot(dx,dz);
+      if(b.p.y>TUB_TOP+b.r*0.3)b.inside=d<TUB_RT;
+      if(b.inside&&b.p.y<TUB_TOP+b.r){ // 대야 안
+        if(b.p.y-b.r<TUB_FLOOR){b.p.y=TUB_FLOOR+b.r;if(b.v.y<0){const imp=-b.v.y;b.v.y=imp*b.e;b.v.x*=0.8;b.v.z*=0.8;b.w.multiplyScalar(0.7);
+            if(!b.landed){b.landed=true;SFX.plop();if(b.mass>=1)splash(b);}}}
+        const R=tubR(b.p.y);if(d+b.r>R&&d>1e-4){const nx=dx/d,nz=dz/d,pen=d+b.r-R;b.p.x-=nx*pen;b.p.z-=nz*pen;const vn=b.v.x*nx+b.v.z*nz;if(vn>0){b.v.x-=(1+b.e)*vn*nx;b.v.z-=(1+b.e)*vn*nz;b.v.y+=vn*0.15;}}
+      }else{ // 대야 밖
+        if(b.p.y<TUB_TOP&&d<TUB_RT+b.r+0.02&&b.p.y>TUB.y-0.02){const nx=dx/d||1,nz=dz/d||0;const tgt=TUB_RT+b.r+0.02;b.p.x=TUB.x+nx*tgt;b.p.z=TUB.z+nz*tgt;const vn=b.v.x*nx+b.v.z*nz;if(vn<0){b.v.x-=(1+b.e)*vn*nx;b.v.z-=(1+b.e)*vn*nz;}}
+        const onCounter=Math.abs(b.p.x)<2.25&&b.p.z>0.28&&b.p.z<1.25, ground=onCounter?0.93:0;
+        if(b.p.y-b.r<ground){b.p.y=ground+b.r;if(b.v.y<0)b.v.y=-b.v.y*b.e*0.6;b.v.x*=0.86;b.v.z*=0.86;b.w.multiplyScalar(0.85);}
+        if(!b.out&&b.landed&&b.p.y<TUB_TOP){b.out=true;const nm=ING[b.k].n;$('selBubble').textContent=`앗! ${nm} 튀어나갔다 ㅋㅋ`;PLAYER.flash('laugh',1.4);PLAYER.say(0.8);
+          setTimeout(()=>{if(BODIES.includes(b)){b.p.set(TUB.x+rnd(-.08,.08),2.4,TUB.z+rnd(-.08,.08));b.v.set(0,-0.5,0);b.inside=true;b.out=false;b.landed=true;}},1600);}
+      }
+      if(b.p.y<-1){b.p.set(TUB.x,2.4,TUB.z);b.v.set(0,0,0);b.inside=true;}
+    });
+    // 재료끼리 충돌 (무게 비율로 밀어냄)
+    for(let i=0;i<BODIES.length;i++)for(let j=i+1;j<BODIES.length;j++){const A=BODIES[i],B=BODIES[j];const nv=B.p.clone().sub(A.p),dist=nv.length(),rr=A.r+B.r;
+      if(dist<rr&&dist>1e-5){nv.divideScalar(dist);const ia=1/A.mass,ib=1/B.mass,pen=rr-dist;A.p.addScaledVector(nv,-pen*ia/(ia+ib));B.p.addScaledVector(nv,pen*ib/(ia+ib));
+        const vn=B.v.clone().sub(A.v).dot(nv);if(vn<0){const e=Math.min(A.e,B.e),jj=-(1+e)*vn/(ia+ib);A.v.addScaledVector(nv,-jj*ia);B.v.addScaledVector(nv,jj*ib);
+          if(!B.landed&&B.v.y>=0){B.landed=true;SFX.plop();if(B.mass>=1)splash(B);}if(!A.landed&&A.v.y>=0){A.landed=true;SFX.plop();if(A.mass>=1)splash(A);}}}}
+  }
+  BODIES.forEach(b=>{b.m.position.copy(b.p);const sp=b.w.length();if(sp>0.01){b.m.rotateOnWorldAxis(b.w.clone().normalize(),sp*dt);}const rest=b.v.length()<0.2;b.w.multiplyScalar(rest?0.9:0.995);});}
+function enterSelect(){scene=K3.scene;K3.items.clear();BODIES=[];PLAYER.root.rotation.y=0;PLAYER.setPose('idle');PLAYER.setExpr('smile');PLAYER.look=0;
+  setCam([0.95,2.05,2.75],[0.95,1.2,0.25],40);
+  const tub=basin(TUB.r,TUB.h,'#c3c8cd');tub.position.set(TUB.x,TUB.y,TUB.z);shadowAll(tub);K3.items.add(tub);
   const card=i=>`<div class="card ${i.g==='weird'?'weird':''} ${S.sel.includes(i.k)?'on':''}" data-k="${i.k}"><img src="${THUMB[i.k]}" alt=""><b>${i.n}</b><i>${i.d}</i></div>`;
   $('gridBasic').innerHTML=INGS.filter(i=>i.g==='basic').map(card).join('');
   $('gridWeird').innerHTML=INGS.filter(i=>i.g==='weird').map(card).join('');
   document.querySelectorAll('#ingPanel .card').forEach(c=>c.onclick=()=>toggleIng(c.dataset.k));
-  $('selBubble').textContent='오늘은 뭘 넣어볼까?';S.sel.forEach((k,i)=>addCounterItem(k,i,true));refreshBasket();
-  frameFn=(dt)=>{placeBubble($('selBubble'),PLAYER,0.38);K3.items.children.forEach(o=>{if(o.userData.drop>0){o.userData.drop=Math.max(0,o.userData.drop-dt*2.5);o.position.y=0.93+o.userData.drop*o.userData.drop*1.2;}o.rotation.y+=dt*0.25;});};}
-function addCounterItem(k,i,instant){const m=wholeModel(ING[k]);const b=new THREE.Box3().setFromObject(m),sz=b.getSize(new THREE.Vector3());const s=0.26/Math.max(sz.x,sz.z);m.scale.setScalar(s);
-  m.position.set(SLOT_X[i],0.93,0.55);m.userData.k=k;m.userData.drop=instant?0:1;shadowAll(m);K3.items.add(m);}
-function relayoutItems(){K3.items.clear();S.sel.forEach((k,i)=>addCounterItem(k,i,true));}
+  $('selBubble').textContent='오늘은 뭘 넣어볼까?';S.sel.forEach(k=>spawnBody(k,false));refreshBasket();
+  frameFn=(dt)=>{placeBubble($('selBubble'),PLAYER,0.38);stepPhysics(dt);};}
 function toggleIng(k){const i=S.sel.indexOf(k);
-  if(i>=0){S.sel.splice(i,1);relayoutItems();PLAYER.flash('worry',0.6);}
-  else{if(S.sel.length>=6){toast('바구니가 꽉 찼어요! (최대 6개)');PLAYER.flash('wince',0.8);return;}S.sel.push(k);addCounterItem(k,S.sel.length-1,false);SFX.plop();
-    const [line,ex]=SEL_LINES[k]||[ING[k].n+' 넣고~','smile'];$('selBubble').textContent=line;PLAYER.flash(ex,1.4);PLAYER.say(1.0);PLAYER.hop();
+  if(i>=0){S.sel.splice(i,1);removeBody(k);PLAYER.flash('worry',0.6);SFX.click();}
+  else{if(S.sel.length>=6){toast('대야가 꽉 찼어요! (최대 6개)');PLAYER.flash('wince',0.8);return;}S.sel.push(k);spawnBody(k,true);
+    const [line,ex]=SEL_LINES[k]||[ING[k].n+' 넣고~','smile'];$('selBubble').textContent=(WEIGHT[k]>=5?'으앗, 무거운 게 떨어진다! ':'')+line;PLAYER.flash(ex,1.4);PLAYER.say(1.0);PLAYER.hop();
     PLAYER.setPose(ING[k].g==='weird'?'cheer':'hold');clearTimeout(toggleIng.t);toggleIng.t=setTimeout(()=>PLAYER.setPose('idle'),900);}
   document.querySelectorAll('#ingPanel .card').forEach(c=>c.classList.toggle('on',S.sel.includes(c.dataset.k)));refreshBasket();}
-function refreshBasket(){$('bCount').textContent=`바구니 ${S.sel.length} / 6`;$('btnToCut').disabled=!S.sel.length;}
+function refreshBasket(){$('bCount').textContent=`대야 ${S.sel.length} / 6`;$('btnToCut').disabled=!S.sel.length;}
 $('btnToCut').onclick=()=>{SFX.click();go('cut');};
 
 /* ---------- STORE ---------- */
@@ -979,7 +1024,7 @@ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
   requestAnimationFrame(loop);}
 window.addEventListener('load',()=>{try{makeThumbs();K3=buildK3();MK=buildMarket();}catch(e){console.error(e);}
   $('loading').style.display='none';go('title');requestAnimationFrame(loop);});
-window.__K={scr:(k)=>{const g=SEASON.items.find(x=>x.userData.s.k===k);return toScreen(g.position.clone().add(new THREE.Vector3(0,0.3,0)));},sscr:(k)=>{const o=K3.items.children.find(x=>x.userData.store===k);return toScreen(o.position.clone().add(new THREE.Vector3(0,0.12,0)));},S,go,ING,toggleIng,pickMethod,CUT,SEASON,MIX,PLAYER,GRANDMA,get EV(){return EV;}};
+window.__K={get BODIES(){return BODIES;},scr:(k)=>{const g=SEASON.items.find(x=>x.userData.s.k===k);return toScreen(g.position.clone().add(new THREE.Vector3(0,0.3,0)));},sscr:(k)=>{const o=K3.items.children.find(x=>x.userData.store===k);return toScreen(o.position.clone().add(new THREE.Vector3(0,0.12,0)));},S,go,ING,toggleIng,pickMethod,CUT,SEASON,MIX,PLAYER,GRANDMA,get EV(){return EV;}};
 
 </script>
 </body>
