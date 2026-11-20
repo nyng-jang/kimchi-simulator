@@ -133,7 +133,7 @@ function updSeasonUI(){SEAS.forEach(s=>{const e=document.querySelector(`#lbl_${s
   $('btnToMix').textContent=any?'버무리러 가기 ▶':'양념 없이 버무리기 ▶';}
 function unmix(){if(SEASON.paste){scene.remove(SEASON.paste);SEASON.paste=null;}SEASON.blobs.forEach(b=>b.visible=true);SEASON.mixed=false;}
 $('btnSeasonReset').onclick=()=>{SFX.click();S.season={};SEASON.blobs.forEach(b=>scene.remove(b));SEASON.blobs=[];unmix();updSeasonUI();coach('seasonCoach','다 비웠다! 처음부터 다시 해 봐라~');};
-$('btnStir').onclick=()=>{SFX.stir(1.5);SEASON.stir={t:0};$('btnStir').disabled=true;};
+$('btnStir').onclick=()=>{SFX.stir(2.4);SEASON.stir={t:0};$('btnStir').disabled=true;};
 $('btnToMix').onclick=()=>{SFX.click();go('mix');};
 function seasonFrame(dt){
   SEASON.items.forEach(g=>{const tgt=g===SEASON.hover?0.12:0;g.position.y+=(tgt-g.position.y)*Math.min(1,dt*12);const s=g.userData.s,el=$('lbl_'+s.k);if(el){const p=toScreen(g.position.clone().add(new THREE.Vector3(0,0.95,0)));el.style.left=p.x+'px';el.style.top=p.y+'px';}});
@@ -143,7 +143,7 @@ function seasonFrame(dt){
   SEASON.blobs.forEach(b=>{if(b.userData.drop>0){const d=Math.min(b.userData.drop,dt*3);b.userData.drop-=d;b.position.y-=d;}});
   if(SEASON.stir){const st=SEASON.stir;st.t+=dt;sp.visible=true;const a=st.t*10;sp.position.set(Math.cos(a)*0.5,0.45,0.45+Math.sin(a)*0.5);sp.rotation.set(0,-a,0);
     SEASON.blobs.forEach(b=>{b.position.x*=0.985;b.position.z=0.45+(b.position.z-0.45)*0.985;b.scale.multiplyScalar(0.985);});
-    if(st.t>1.4){SEASON.stir=null;SEASON.blobs.forEach(b=>b.visible=false);const c=sauceColor();const n=Object.values(S.season).reduce((a,b)=>a+b,0);
+    if(st.t>2.4){SEASON.stir=null;SEASON.blobs.forEach(b=>b.visible=false);const c=sauceColor();const n=Object.values(S.season).reduce((a,b)=>a+b,0);
       const paste=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.55,0.08+Math.min(n,30)*0.008,8),mat(c));paste.position.set(0,0.12,0.45);scene.add(paste);SEASON.paste=paste;SEASON.mixed=true;SFX.ding();updSeasonUI();coach('seasonCoach','양념 완성! 이제 버무리러 가자~');}}}
 
 /* ---------- MIX ---------- */
