@@ -663,16 +663,48 @@ function bakeGeometry(root){ // 씬 안의 모든 메시를 하나의 비인덱�
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));return g;}
 function normalizeIngredient(geo,ing){ // x 길이를 데이터의 L에 맞추고, x·z 가운데 정렬, 바닥 y=0
   geo.computeBoundingBox();const b=geo.boundingBox,sx=b.max.x-b.min.x;const s=sx>1e-6?ing.L/sx:1;
-  geo.translate(-(b.min.x+b.max.x)/2,-b.min.y,-(b.min.z+b.max.z)/2);geo.scale(s,s,s);geo.computeBoundingBox();return geo;}
+  const t=[(b.min.x+b.max.x)/2,b.min.y,(b.min.z+b.max.z)/2];geo.translate(-t[0],-t[1],-t[2]);geo.scale(s,s,s);geo.computeBoundingBox();geo.userData={xf:{t,s}};return geo;}
 function loadAssets(){
   if(!THREE.GLTFLoader)return Promise.resolve('no-loader');
   const loader=new THREE.GLTFLoader();
   const one=(url)=>new Promise(res=>{let done=false;const t=setTimeout(()=>{if(!done){done=true;res(null);}},8000);
     loader.load(url,g=>{if(!done){done=true;clearTimeout(t);res(g);}},undefined,()=>{if(!done){done=true;clearTimeout(t);res(null);}});});
   return Promise.all([
-    ...INGS.map(i=>one(`${ASSET_BASE}ingredients/${i.k}.glb`).then(g=>{if(g){try{MODELS[i.k]={geo:normalizeIngredient(bakeGeometry(g.scene),i)};MODELS[i.k].box=MODELS[i.k].geo.boundingBox.clone();}catch(e){console.warn('model',i.k,e);}}})),
+    ...INGS.map(i=>one(`${ASSET_BASE}ingredients/${i.k}.glb`).then(g=>{if(g){try{const geo=normalizeIngredient(bakeGeometry(g.scene),i);MODELS[i.k]={geo,box:geo.boundingBox.clone(),xf:geo.userData.xf};}catch(e){console.warn('model',i.k,e);}}})),
     ...SEAS.map(s=>one(`${ASSET_BASE}seasonings/${s.k}.glb`).then(g=>{if(g)SEAMODELS[s.k]=g.scene;})),
   ]).then(()=>`${Object.keys(MODELS).length}/${INGS.length} ingredients, ${Object.keys(SEAMODELS).length}/${SEAS.length} seasonings`);}
+
+/* ---------- 단면 무늬: 원래 모델 좌표(p) → 색. 여기 없는 재료는 단색(ing.inner) ---------- */
+const _h3=(a,b,c,s)=>{let n=Math.sin(a*127.1+b*311.7+c*74.7+(s||0)*19.3)*43758.5453;return n-Math.floor(n);};
+function _vn(x,y,z){const X=Math.floor(x),Y=Math.floor(y),Z=Math.floor(z),fx=x-X,fy=y-Y,fz=z-Z,s=t=>t*t*(3-2*t),l=(a,b,t)=>a+(b-a)*t,h=(a,b,c)=>_h3(a,b,c);
+  return l(l(l(h(X,Y,Z),h(X+1,Y,Z),s(fx)),l(h(X,Y+1,Z),h(X+1,Y+1,Z),s(fx)),s(fy)),l(l(h(X,Y,Z+1),h(X+1,Y,Z+1),s(fx)),l(h(X,Y+1,Z+1),h(X+1,Y+1,Z+1),s(fx)),s(fy)),s(fz));}
+function _spots(p,cell,rad,prob,seed,stretch){ // 격자 칸마다 점 하나 (확률 prob), 반지름 rad 안이면 true
+  const cx=Math.floor(p[0]/cell),cy=Math.floor(p[1]/cell),cz=Math.floor(p[2]/cell);
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){const a=cx+i,b=cy+j,c=cz+k;if(_h3(a,b,c,seed)>prob)continue;
+    const q=[(a+_h3(a,b,c,seed+1))*cell,(b+_h3(a,b,c,seed+2))*cell,(c+_h3(a,b,c,seed+3))*cell];const st=stretch||[1,1,1];
+    const d=Math.hypot((p[0]-q[0])/st[0],(p[1]-q[1])/st[1],(p[2]-q[2])/st[2]);if(d<rad)return [q,d/rad];}return null;}
+const _mix=(a,b,t)=>{const A=hex(a),B=hex(b);return A.lerp(B,Math.max(0,Math.min(1,t)));};
+const INNER={
+  watermelon:p=>{const d=Math.hypot(p[0],p[1]-0.601,p[2])/0.61;
+    if(d>0.95)return hex('#2f6b2a');if(d>0.86)return _mix('#e8f0c8','#b9d98a',(d-0.86)/0.09);
+    const s=_spots(p,0.1,0.03,0.9,1,[0.7,1.4,0.7]);if(s&&d>0.2&&d<0.8)return hex(s[1]<0.5?'#1a0f08':'#3a2214');
+    return _mix('#e8455a','#ff6a6a',_vn(p[0]*6,p[1]*6,p[2]*6)*0.6+(d<0.3?0.3:0));},
+  dujjon:p=>{const e=Math.hypot(p[0]/0.45,(p[1]-0.3)/0.3,p[2]/0.34);if(e>0.9)return _mix('#3a1f10','#5a3420',_vn(p[0]*30,p[1]*30,p[2]*30));
+    const strand=_vn(p[0]*8,p[1]*40,p[2]*40),fine=_vn(p[0]*60,p[1]*60,p[2]*60);let c=_mix('#6f9a3a','#a9c96a',strand);if(fine>0.72)c=_mix('#c9dc8a','#e8e2a8',fine);if(fine<0.15)c=hex('#4f7a2a');return c;},
+  mintchoco:p=>{const s=_spots(p,0.1,0.035,0.75,5,[1.3,0.7,1]);if(s)return hex(s[1]<0.6?'#3a2214':'#5a3a24');return _mix('#8fe0c8','#b5efdc',_vn(p[0]*10,p[1]*10,p[2]*10));},
+  cheese:p=>{const holes=[[0.0,0.42,0.08,0.09],[-0.25,0.42,-0.1,0.07],[0.18,0.42,-0.05,0.05],[-0.1,0.2,0.192,0.08],[0.12,0.12,0.124,0.06],[-0.38,0.25,0,0.1],[-0.3,0.1,-0.264,0.06],[0.05,0.28,-0.14,0.07]];
+    for(const [x,y,z,r] of holes){const d=Math.hypot(p[0]-x,p[1]-y,p[2]-z);if(d<r)return _mix('#b8861f','#dcaa34',d/r);}
+    const s=_spots(p,0.16,0.05,0.5,9);if(s)return _mix('#b8861f','#dcaa34',s[1]);return _mix('#f2c84b','#f7d76a',_vn(p[0]*8,p[1]*8,p[2]*8));},
+  pineapple:p=>{const r=Math.hypot(p[1]-0.36,p[2])/0.36;if(p[0]>0.47)return hex('#7fa33a');
+    if(r>0.93)return hex('#8a5a1e');if(r>0.85)return hex('#d9b04a');if(r<0.22)return _mix('#f7e7a0','#efd67a',r/0.22);
+    const ang=Math.atan2(p[2],p[1]-0.36);const fiber=Math.abs(Math.sin(ang*18))<0.12;return fiber?hex('#f0cf52'):_mix('#ffd84d','#ffe27a',_vn(p[0]*12,r*6,ang));},
+};
+function _subdiv(a,b,c,h,out,depth){ // 가장 긴 변을 반으로 나누기 (넓이에 비례하는 개수만 생김)
+  const L=[Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]),Math.hypot(b[0]-c[0],b[1]-c[1],b[2]-c[2]),Math.hypot(c[0]-a[0],c[1]-a[1],c[2]-a[2])];const e=Math.max(...L);
+  if(e<=h||depth>14){out.push([a,b,c]);return;}const m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2];
+  if(e===L[0]){const x=m(a,b);_subdiv(a,x,c,h,out,depth+1);_subdiv(x,b,c,h,out,depth+1);}
+  else if(e===L[1]){const x=m(b,c);_subdiv(a,b,x,h,out,depth+1);_subdiv(a,x,c,h,out,depth+1);}
+  else{const x=m(c,a);_subdiv(a,b,x,h,out,depth+1);_subdiv(x,b,c,h,out,depth+1);}}
 
 /* ---------- 평면 자르기: 반공간으로 자르고 잘린 면(단면)을 채움 ---------- */
 function clipHalf(pos,col,axis,c,keepGreater,capColor){
@@ -700,18 +732,20 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
     while(curK!==startK&&guard++<5000){const cand=(ends.get(curK)||[]).find(([j])=>!used[j]);if(!cand)break;const [j,e]=cand;used[j]=true;const nxt=segs[j][1-e];curK=keyOf(nxt);if(curK!==startK)loop.push(nxt);}
     if(loop.length<3)continue;
     const contour=loop.map(p=>new THREE.Vector2(p[U],p[1]));let tris;try{tris=THREE.ShapeUtils.triangulateShape(contour,[]);}catch(e){continue;}
-    const cc=hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
+    const cc=typeof capColor==='function'?null:hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
       const e1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],e2=[c2[0]-a[0],c2[1]-a[1],c2[2]-a[2]];const nA=A===0?e1[1]*e2[2]-e1[2]*e2[1]:e1[0]*e2[1]-e1[1]*e2[0];
       if(Math.sign(nA)!==want)[b,c2]=[c2,b]; // 단면이 잘린 쪽 바깥을 보도록 방향 맞춤
-      for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
+      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
+      else for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
 function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
+  const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;const capC=pat||ing.inner;
   let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
   const X=t=>b.min.x+(b.max.x-b.min.x)*t, Z=t=>b.min.z+(b.max.z-b.min.z)*t;
-  if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,ing.inner);
-  if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,ing.inner);
-  if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,ing.inner);
-  if(z1<0.9999)[pos,col]=clipHalf(pos,col,'z',Z(z1)-eps,false,ing.inner);
+  if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,capC);
+  if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,capC);
+  if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,capC);
+  if(z1<0.9999)[pos,col]=clipHalf(pos,col,'z',Z(z1)-eps,false,capC);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   g.computeBoundingBox();const bb=g.boundingBox;const cx=(bb.min.x+bb.max.x)/2,cy=(bb.min.y+bb.max.y)/2,cz=(bb.min.z+bb.max.z)/2;
   g.translate(-cx,-cy,-cz);g.computeVertexNormals();
