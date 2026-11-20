@@ -156,6 +156,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
   </div>
 
   <div class="screen" id="cut">
+    <button class="btn sub" id="btnCutBack" style="position:absolute;left:20px;top:70px;font-size:18px;padding:8px 18px">◀ 재료 다시 고르기</button>
     <div class="queue" id="cutQueue"></div>
     <div class="tip" id="cutTip"></div>
     <div class="bubble l coachB" id="cutCoach"></div>
@@ -842,14 +843,14 @@ function applyCut(c){
   const left=CUT.chops.length-CUT.done.length;
   if(left>0){$('cutTip').textContent=`좋아! 남은 칼질 ${left}번`;if(remainingAxis()==='z'&&c.ax==='x'&&!CUT.chops.filter(q=>q.ax==='x'&&!CUT.done.includes(q)).length)$('cutTip').textContent=`이번엔 세로로! 남은 칼질 ${left}번`;}
   else{$('cutTip').textContent=`${CUT.ing.n} 손질 완료! 딱딱 잘 썰었다 👏`;CUT.finished=true;renderMethods();setTimeout(finishIng,650);}}
-function finishIng(){
+function finishIng(){if(!$('cut').classList.contains('on'))return;
   S.cut[CUT.ing.k]=CUT.method;
   CUT.flying=CUT.meshes.map((m,i)=>{const wp=new THREE.Vector3();m.getWorldPosition(wp);CUT.group.remove(m);m.position.copy(wp);scene.add(m);
     const a=Math.random()*Math.PI*2,r=Math.random()*0.55;const dst=new THREE.Vector3(BOWL_POS.x+Math.cos(a)*r,0.25+CUT.inBowl*0.006+Math.random()*0.15,BOWL_POS.z+Math.sin(a)*r*0.8);
     S.pieces.push({k:CUT.ing.k,reg:m.userData.reg,method:CUT.method});
     return {m,from:wp.clone(),to:dst,t:-i*0.03,s0:m.scale.x,s1:0.45};});
   CUT.inBowl+=CUT.meshes.length;CUT.meshes=[];SFX.plop();
-  setTimeout(()=>{CUT.qi++;if(CUT.qi>=CUT.queue.length){$('cutTip').textContent='손질 끝! 양념 만들러 가자~';renderQueue();$('methods').innerHTML='<button class="on" id="btnToSeason" style="background:#d9482f;color:#fff;border-color:#d9482f;font-size:22px;padding:10px 26px">양념 만들러 가기 ▶</button>';$('btnToSeason').onclick=()=>{SFX.click();go('season');};}else loadIng();},900);}
+  setTimeout(()=>{if(!$('cut').classList.contains('on'))return;CUT.qi++;if(CUT.qi>=CUT.queue.length){$('cutTip').textContent='손질 끝! 양념 만들러 가자~';renderQueue();$('methods').innerHTML='<button class="on" id="btnToSeason" style="background:#d9482f;color:#fff;border-color:#d9482f;font-size:22px;padding:10px 26px">양념 만들러 가기 ▶</button>';$('btnToSeason').onclick=()=>{SFX.click();go('season');};}else loadIng();},900);}
 function cutFrame(dt){
   const k=CUT.knife;const ax=remainingAxis();
   // knife orientation & position
@@ -940,7 +941,7 @@ function mixFrame(dt){
   if(MIX.progress>=1&&!MIX.done){MIX.done=true;SFX.ding();toast('다 버무렸다! 🎉');$('btnToStore').disabled=false;coach('mixCoach','아이고 잘 버무렸다! 빛깔 좋네~');}}
 $('btnToStore').onclick=()=>{SFX.click();// photo
   MIX.glove.visible=false;const cp=camera.position.clone();camera.position.set(0,3.6,2.3);camera.lookAt(0,0.2,0);R.render(scene,camera);S.photo=R.domElement.toDataURL('image/jpeg',0.85);camera.position.copy(cp);
-  S.plate=MIX.items;camExitToStore();};
+  S.plate=MIX.items;go('store');};
 
 
 
@@ -1041,7 +1042,8 @@ function toggleIng(k){const i=S.sel.indexOf(k);
     PLAYER.setPose(ING[k].g==='weird'?'cheer':'hold');clearTimeout(toggleIng.t);toggleIng.t=setTimeout(()=>PLAYER.setPose('idle'),900);}
   document.querySelectorAll('#ingPanel .card').forEach(c=>c.classList.toggle('on',S.sel.includes(c.dataset.k)));refreshBasket();}
 function refreshBasket(){$('bCount').textContent=`대야 ${S.sel.length} / 6`;$('btnToCut').disabled=!S.sel.length;}
-$('btnToCut').onclick=()=>{SFX.click();camEnterToCut();};
+$('btnToCut').onclick=()=>{SFX.click();go('cut');};
+$('btnCutBack').onclick=()=>{SFX.click();S.cut={};S.pieces=[];go('select');};
 
 /* ---------- 시점 전환 (3인칭 ↔ 1인칭) ---------- */
 let CAMTW=null;
