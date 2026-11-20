@@ -20,6 +20,12 @@
 - 캐릭터·배경은 코드로 만든 로우폴리 3D (플랫 셰이딩, 캔버스 텍스처)
 - 효과음: Web Audio API로 합성
 
+## 소스 구조와 빌드
+- 읽을 수 있는 원본 코드는 `src/`에 조각으로 나뉘어 있습니다 (`src/source.html`은 합친 원본).
+- 배포되는 루트 `index.html`은 난독화된 빌드 결과물입니다. 직접 고치지 말고 `src/`를 고친 뒤 빌드하세요.
+- 빌드: `npm i -g javascript-obfuscator` 후 `node src/build.mjs`
+- `src/`, `docs/`, `README.md`는 `.vercelignore`로 Vercel 배포에서 제외됩니다.
+
 ## 실행
 정적 호스팅(Vercel 등)에 그대로 올리거나, 로컬에서는 `python -m http.server`로 연 뒤 `http://localhost:8000`에 접속하세요. (`file://`로 열면 모델 파일을 못 불러와 기본 모델로 동작합니다.)
 
