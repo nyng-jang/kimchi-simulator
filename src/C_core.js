@@ -9,8 +9,9 @@ function stats(withSeason){const t=Object.fromEntries(STATS.map(s=>[s[0],0]));
   return t;}
 function resetRound(){S.sel=[];S.cut={};S.pieces=[];S.season={};S.store=null;S.photo=null;S.plate=null;}
 function dexOpen(){const d=document.getElementById('dex');return d&&d.classList.contains('on');}
-let DEX={found:{},recent:[]};
+let DEX={found:{},recent:[],custom:[]};
 try{const d=JSON.parse(localStorage.getItem('kimchi-dex-v1')||'null');if(d&&d.found)DEX=d;}catch(e){}
+DEX.custom=DEX.custom||[];DEX.recent=DEX.recent||[];
 function saveDex(){try{localStorage.setItem('kimchi-dex-v1',JSON.stringify(DEX));}catch(e){}}
 
 /* =========================================================

@@ -152,9 +152,40 @@ function genName(c){const st=STORE[c.store].pre;
   const adj=best&&bv>=3?ADJ[best][bv>=7?1:0]:'';
   const weird=c.sel.find(k=>ING[k].g==='weird');const main=weird||c.sel.filter(k=>k!=='cabbage')[0]||'';
   return [st,adj,(main?ING[main].n+' ':'')+type].filter(Boolean).join(' ');}
-function thumbsScore(c,recipe){if(recipe&&['classic','mukeunji','baek','kkakdugi'].includes(recipe.k))return 5;
-  let s=3;const g=sp(c,'gochu');if(g>=1&&g<=5)s++;if(c.stat.salty>=1&&c.stat.salty<=5)s++;if(c.stat.weird>=3)s--;if(c.stat.weird>=6)s--;if(c.stat.salty>=7||c.stat.spicy>=8)s--;if(c.stat.umami>=2)s+=0.5;return Math.max(1,Math.min(5,Math.round(s)));}
-let EV=null;
+/* ---------- 할머니 채점표 (100점 → 엄지 1~5개) ----------
+  간 25 · 맛 균형 25 · 재료 조화 20 · 손질 15 · 양념 완성도 15
+  엉뚱한 재료·양념 하나당 -12 감점
+  엄지: 85점↑ 5개, 70↑ 4개, 55↑ 3개, 35↑ 2개, 그 아래 1개 */
+const CUT_FIT={cabbage:{pogi:1,mak:1,kkak:.5,chae:.5},radish:{kkak:1,chae:1,mak:1,pogi:.5},mustard:{mak:1,chae:1},leek:{mak:1,chae:1},chive:{mak:1,chae:1},water:{mak:1,chae:1},
+  onion:{chae:1,mak:1,kkak:.5},pear:{chae:1,kkak:1,mak:.5},cucumber:{mak:1,kkak:1,chae:1,pogi:.5},oyster:{whole:1,mak:.5}};
+const band=(v,full,half,low)=>v>=full[0]&&v<=full[1]?1:(v>=half[0]&&v<=half[1]?.6:(v>=low[0]&&v<=low[1]?.2:0));
+function scoreKimchi(c){const st=c.stat,sv=k=>sp(c,k),spoons=Object.values(c.season).reduce((x,y)=>x+y,0);
+  const basics=c.sel.filter(k=>ING[k].g==='basic'),weirdI=c.sel.filter(k=>ING[k].g==='weird').length,weirdS=SEAS.filter(s=>s.weird&&sv(s.k)>0).length;
+  const P=[];
+  // 1) 간 25: 짠맛 2~4 딱 좋음
+  P.push(['간',Math.round(25*band(st.salty,[2,4],[1,5],[0.5,6.5])),25,st.salty<1?'싱거워요':st.salty>5?'너무 짜요':st.salty<2||st.salty>4?'간이 조금 아쉬워요':'간이 딱 좋아요']);
+  // 2) 맛 균형 25: 매운맛 2~5(10) + 감칠맛(10) + 단맛 과하지 않게(5)
+  const spicy=10*band(st.spicy,[2,5],[1,6.5],[0.5,8]),umami=st.umami>=2.5?10:st.umami>=1.5?6:st.umami>=0.5?3:0,sweet=st.sweet<=3?5:st.sweet<=5?2:0;
+  P.push(['맛 균형',Math.round(spicy+umami+sweet),25,umami<6?'감칠맛이 부족해요':spicy<10?'매운맛이 어긋나요':sweet<5?'너무 달아요':'맛이 잘 어우러져요']);
+  // 3) 재료 조화 20: 배추·무 바탕(8) + 기본 재료 3가지↑(6) + 향채(6), 엉뚱한 재료 하나당 -8, 엉뚱한 양념 하나당 -6
+  let ing=(c.sel.some(k=>k==='cabbage'||k==='radish')?8:0)+(basics.length>=3?6:basics.length===2?3:0)+(c.sel.some(k=>['leek','chive','mustard','water'].includes(k))?6:0)-8*weirdI-6*weirdS;
+  P.push(['재료 조화',Math.max(0,ing),20,weirdI+weirdS?'엉뚱한 재료가 들어갔어요':ing>=20?'재료 구성이 좋아요':'재료가 조금 단출해요']);
+  // 4) 손질 15: 재료마다 어울리는 썰기인지
+  const fits=c.sel.map(k=>{const m=c.cut[k];if(ING[k].g==='weird')return .5;return (CUT_FIT[k]||{})[m]||0;});
+  const cut=fits.length?15*fits.reduce((x,y)=>x+y,0)/fits.length:0;
+  P.push(['손질',Math.round(cut),15,cut>=13?'손질이 깔끔해요':'재료와 안 맞는 썰기가 있어요']);
+  // 5) 양념 완성도 15: 마늘(5) + 젓갈(5) + 생강·찹쌀풀(3) + 양념 양 적당 4~14숟갈(2)
+  const sea=(sv('garlic')>=1?5:0)+(sv('shrimp')+sv('fishsauce')>=1?5:0)+(sv('ginger')+sv('rice')>=1?3:0)+(spoons>=4&&spoons<=14?2:0);
+  P.push(['양념',sea,15,sea>=13?'양념이 알차요':sv('garlic')<1?'마늘이 빠졌어요':sv('shrimp')+sv('fishsauce')<1?'젓갈이 빠졌어요':'양념이 조금 아쉬워요']);
+  // 6) 엉뚱함 감점: 엉뚱한 재료·양념 하나당 -12 (할머니 기준에서 김치가 아님)
+  const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 감점',-pen,0,`엉뚱한 재료·양념 ${weirdI+weirdS}개`]);
+  const total=Math.max(0,P.reduce((x,p)=>x+p[1],0));const thumbs=total>=85?5:total>=70?4:total>=55?3:total>=35?2:1;
+  return {total,thumbs,parts:P};}
+const TASTE_W={salty:'짭짤하고',spicy:'매콤하고',sweet:'달큰하고',umami:'감칠맛 나고',cool:'시원하고',weird:'요상하고'};
+function tasteLine(c){const top=Object.entries(c.stat).sort((a,b)=>b[1]-a[1]).filter(e=>e[1]>=1).slice(0,2).map(e=>TASTE_W[e[0]]);
+  return top.length?(top.join(' ').replace(/고$/,'')+'은 맛').replace('나은 맛','나는 맛').replace('하은 맛','한 맛').replace('큰은','큰').replace('콤은','콤한').replace('짤은','짤한'):'담백한 맛';}
+function recipeSig(c){return JSON.stringify([c.sel.slice().sort(),c.sel.slice().sort().map(k=>c.cut[k]),Object.keys(c.season).filter(k=>c.season[k]).sort().map(k=>k+c.season[k]),c.store]);}
+let EV=null,EVINFO=null;
 function platePhoto(){try{const pc=new THREE.PerspectiveCamera(30,4/3,0.05,20);const pg=MK.plateGrp.position;pc.position.set(pg.x+0.03,pg.y+0.95,pg.z+0.8);pc.lookAt(pg.x,pg.y,pg.z);
   const vis=GRANDMA.root.visible;GRANDMA.root.visible=false;MK.scene.updateMatrixWorld(true);
   R.setViewport(0,0,1280,720);R.setSize(640,480,false);R.render(MK.scene,pc);const url=R.domElement.toDataURL('image/jpeg',0.82);
@@ -170,8 +201,9 @@ function enterEval(){
   const c=ctx();const recipe=RECIPES.find(r=>{try{return r.test(c);}catch(e){return false;}});
   const name=recipe?recipe.n:genName(c);const isNew=recipe&&!DEX.found[recipe.k];
   if(recipe)DEX.found[recipe.k]={photo:S.photo,at:Date.now()};
-  DEX.recent.unshift({n:name,photo:S.photo});DEX.recent=DEX.recent.slice(0,8);saveDex();
-  const th=thumbsScore(c,recipe);
+  const SC=scoreKimchi(c),th=SC.thumbs;
+  DEX.recent.unshift({n:name,photo:S.photo,score:SC.total});DEX.recent=DEX.recent.slice(0,8);saveDex();
+  EVINFO={c,recipe,name,SC,sig:recipeSig(c),taste:tasteLine(c)};
   const lines=composeReactions(c,recipe);
   lines.push(CLOSERS[Math.floor(Math.random()*CLOSERS.length)]);
   // reaction choice
@@ -182,6 +214,8 @@ function enterEval(){
   $('resName').textContent=name;$('resNew').innerHTML=isNew?'<span class="new">✨ 새로운 김치 발견!</span>':recipe?'<span class="new" style="background:#e7dccd;color:#7a5a3a">도감에 있는 김치</span>':'';
   $('resThumbs').innerHTML='할머니 엄지 '+[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');
   $('resBars').innerHTML=STATS.map(([k,n,col])=>`<div class="bar"><label>${n}</label><div class="t"><div data-w="${Math.min(100,c.stat[k]/10*100)}" style="background:${col}"></div></div><span class="v">${Math.round(c.stat[k]*10)/10}</span></div>`).join('');
+  $('resScore').innerHTML=`<div class="tot">할머니 점수 <b>${SC.total}</b>점</div>`+SC.parts.map(([n,p,m,why])=>`<div class="sc"><span>${n}</span><b>${m?p+'/'+m:p}</b><i>${why}</i></div>`).join('');
+  setupNaming();
   $('resDetail').textContent=`${c.sel.map(k=>ING[k].n).join(', ')} · 양념 ${Object.values(c.season).reduce((a,b)=>a+b,0)}숟갈 · ${STORE[c.store].n}`;
   GRANDMA.say(1.6);
   EV={t:0,steps:[
@@ -194,9 +228,26 @@ function enterEval(){
   frameFn=(dt)=>{EV.t+=dt;while(EV.steps.length&&EV.t>=EV.steps[0][0])EV.steps.shift()[1]();};}
 $('btnAgain').onclick=()=>{SFX.click();resetRound();GRANDMA.setPose('idle');go('select');};
 
+/* ---------- 이름 짓기 · 나만의 레시피 ---------- */
+const MY_MIN=70; // 엄지 4개 이상
+function setupNaming(){const {name,recipe,SC,sig}=EVINFO;const inp=$('nickInput');inp.value='';inp.placeholder=name;
+  const exist=DEX.custom.find(r=>r.sig===sig);const ok=!recipe&&SC.total>=MY_MIN;
+  $('btnNick').textContent=ok?(exist?'레시피 이름 바꾸기':'나만의 레시피로 등록'):'이름 붙이기';
+  $('nickNote').textContent=recipe?'숨은 김치예요. 붙인 이름은 최근에 만든 김치에 남아요.':ok?(exist?'이미 등록된 레시피예요.':`${SC.total}점! 도감에 나만의 레시피로 올릴 수 있어요.`):`${MY_MIN}점(엄지 4개) 이상이면 나만의 레시피로 도감에 등록돼요.`;}
+$('btnNick').onclick=()=>{const {name,recipe,SC,sig,taste,c}=EVINFO;const nick=($('nickInput').value||'').trim().slice(0,16)||name;
+  if(DEX.recent[0])DEX.recent[0].n=nick;$('resName').textContent=nick;
+  if(!recipe&&SC.total>=MY_MIN){const ex=DEX.custom.find(r=>r.sig===sig);
+    if(ex){ex.n=nick;toast('레시피 이름을 바꿨어요');}
+    else{DEX.custom.unshift({sig,n:nick,photo:S.photo,score:SC.total,thumbs:SC.thumbs,taste,how:`${c.sel.map(k=>ING[k].n).join(', ')} · 양념 ${Object.entries(c.season).filter(e=>e[1]).map(([k,v])=>SEA[k].n+' '+v).join(', ')} · ${STORE[c.store].n}`,at:Date.now()});
+      DEX.custom=DEX.custom.slice(0,24);SFX.ding();toast('📖 나만의 레시피 등록!');GRANDMA.flash('laugh',1.5);GRANDMA.say(1);}
+  }else toast('이름을 붙였어요');
+  saveDex();setupNaming();};
+$('nickInput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')$('btnNick').click();});
+
 /* ---------- DEX ---------- */
-function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent=`숨은 김치 ${f} / ${RECIPES.length} 발견`;
+function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent=`숨은 김치 ${f} / ${RECIPES.length} 발견 · 나만의 레시피 ${DEX.custom.length}개`;
   $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b><span class="taste">${r.taste||''}</span></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
+  $('dexMine').innerHTML=DEX.custom.length?DEX.custom.map(r=>`<div class="dcard mine"><img src="${r.photo||''}"><b>${r.n}</b><span class="taste">${r.taste} · ${'👍'.repeat(r.thumbs)} ${r.score}점</span><span class="how">${r.how}</span></div>`).join(''):'<span class="hint">할머니께 70점(엄지 4개) 이상 받은 내 김치를 등록해 보세요</span>';
   $('dexRecent').innerHTML=DEX.recent.length?DEX.recent.map(r=>`<div class="dcard"><img src="${r.photo||''}"><b style="font-size:15px">${r.n}</b></div>`).join(''):'<span class="hint">아직 만든 김치가 없어요</span>';
   $('dex').classList.add('on');}
 $('btnDexFloat').onclick=()=>{SFX.click();openDex();};

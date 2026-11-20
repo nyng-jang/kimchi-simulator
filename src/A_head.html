@@ -116,7 +116,24 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .dcard .taste{display:block;font-size:13px;color:#7a5a3a;margin-top:4px;line-height:1.35}
 /* dex */
 #dex{background:rgba(30,20,12,.72);z-index:50}
-#dex .box{position:absolute;left:90px;right:90px;top:50px;bottom:50px;background:#fff8ec;border-radius:24px;padding:24px 30px;overflow:auto}
+#dex .box{position:absolute;left:90px;right:90px;top:50px;bottom:50px;background:#fff8ec;border-radius:24px;padding:0 30px 24px;overflow:auto}
+#dex .dhead{position:sticky;top:0;z-index:3;background:#fff8ec;padding:22px 0 12px;margin-bottom:4px;border-bottom:2px solid #f0dfc8}
+#dex .dhead .cnt{margin:0}
+#dex h2.sub2{font-size:22px;margin:16px 0 10px}
+.dcard .how{display:block;font-size:11px;color:#a08a76;margin-top:3px;line-height:1.3}
+#resCard .bar{margin:2px 0;font-size:13px}
+#resCard .bar .t{height:10px}
+#resCard .score{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin-top:8px;font-size:12px}
+#resCard .score .tot{grid-column:1/-1;font-family:'Do Hyeon';font-size:17px;color:#7a3b1f}
+#resCard .score .tot b{font-weight:normal;color:#d9482f;font-size:22px}
+#resCard .sc{display:flex;gap:4px;align-items:baseline;flex-wrap:wrap}
+#resCard .sc span{font-family:'Do Hyeon';color:#5a3a22}
+#resCard .sc b{font-weight:normal;color:#d9482f}
+#resCard .sc i{font-style:normal;color:#8a7260;width:100%;font-size:11px;margin-top:-2px}
+#resCard .nick{display:flex;gap:6px;margin-top:8px}
+#resCard .nick input{flex:1;min-width:0;font-family:inherit;font-size:15px;padding:6px 10px;border:2px solid #f0dfc8;border-radius:12px;background:#fff}
+#resCard .nick .btn{font-size:15px;padding:6px 12px;box-shadow:0 3px 0 #8f2a19}
+#resCard .nnote{font-size:11px;color:#8a7260;margin-top:4px;text-align:center}
 #dex h2{font-family:'Do Hyeon';font-size:32px;color:#7a3b1f}
 #dex .cnt{font-size:16px;color:#a08a76;margin-bottom:14px}
 .dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -126,7 +143,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .dcard b{font-family:'Do Hyeon';font-weight:normal;font-size:18px;display:block;margin-top:6px}
 .dcard span{font-size:13px;color:#a08a76}
 .dcard.lock b{color:#b9a796}
-#dex .close{position:absolute;right:26px;top:22px}
+#dex .close{position:absolute;right:0;top:18px}
 #toast{position:absolute;top:150px;left:50%;transform:translateX(-50%) scale(.8);background:#ffcf3f;color:#5a3000;font-family:'Do Hyeon';font-size:24px;padding:10px 26px;border-radius:30px;opacity:0;transition:all .3s;z-index:60;pointer-events:none;box-shadow:0 5px 16px rgba(0,0,0,.25)}
 #toast.show{opacity:1;transform:translateX(-50%) scale(1)}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Do Hyeon';font-size:28px;color:#7a3b1f;background:#efe2cc;z-index:99}
@@ -198,17 +215,22 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
       <div class="thumbs" id="resThumbs"></div>
       <h4>👅 할머니의 맛 분석</h4>
       <div class="bars" id="resBars"></div>
+      <div class="score" id="resScore"></div>
       <div class="detail" id="resDetail"></div>
+      <div class="nick"><input id="nickInput" maxlength="16" autocomplete="off"><button class="btn" id="btnNick">이름 붙이기</button></div>
+      <div class="nnote" id="nickNote"></div>
     </div>
     <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>
 
   <div class="screen" id="dex"><div class="box">
-    <button class="btn sub close" id="btnDexClose">닫기 ✕</button>
-    <h2>📖 김치 도감</h2><div class="cnt" id="dexCnt"></div>
+    <div class="dhead"><h2>📖 김치 도감</h2><div class="cnt" id="dexCnt"></div><button class="btn sub close" id="btnDexClose">닫기 ✕</button></div>
+    <h2 class="sub2">숨은 김치</h2>
     <div class="dgrid" id="dexGrid"></div>
-    <h2 style="font-size:24px;margin-top:20px">최근에 만든 김치</h2>
-    <div class="dgrid" id="dexRecent" style="margin-top:10px"></div>
+    <h2 class="sub2">나만의 레시피</h2>
+    <div class="dgrid" id="dexMine"></div>
+    <h2 class="sub2">최근에 만든 김치</h2>
+    <div class="dgrid" id="dexRecent"></div>
   </div></div>
 
   <div id="toast"></div>
