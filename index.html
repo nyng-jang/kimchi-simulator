@@ -109,8 +109,11 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .bar .v{width:26px;text-align:right;font-family:'Do Hyeon';color:#8a7260}
 #resCard .detail{font-size:13px;color:#8a7260;margin-top:6px;text-align:center}
 #resCard h4{font-family:'Do Hyeon';font-weight:normal;font-size:17px;color:#7a3b1f;margin-top:8px}
-#eval .btns{position:absolute;right:26px;bottom:22px;display:flex;gap:12px;opacity:0;transition:opacity .4s}
-#eval .btns.show{opacity:1}
+#eval .btns{position:absolute;right:26px;bottom:22px;display:flex;gap:12px;opacity:0;transition:opacity .4s;pointer-events:none!important;visibility:hidden}
+#eval .btns.show{opacity:1;pointer-events:auto!important;visibility:visible}
+#btnDexFloat{position:absolute;right:18px;top:14px;z-index:40;font-size:18px;padding:8px 16px}
+#btnHome{position:absolute;left:20px;top:70px;font-size:18px;padding:8px 18px}
+.dcard .taste{display:block;font-size:13px;color:#7a5a3a;margin-top:4px;line-height:1.35}
 /* dex */
 #dex{background:rgba(30,20,12,.72);z-index:50}
 #dex .box{position:absolute;left:90px;right:90px;top:50px;bottom:50px;background:#fff8ec;border-radius:24px;padding:24px 30px;overflow:auto}
@@ -133,11 +136,12 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 <div id="wrap"><div id="stage">
   <canvas id="gl"></canvas>
   <div id="steps"></div>
+  <button class="btn sub" id="btnDexFloat">📖 김치 도감</button>
   <div class="callwin" id="callwin"><div class="nm" id="callName">할머니</div></div>
 
   <div class="screen" id="title">
     <h1><small>해외 자취생의 김장 도전기</small>할머니,<br>김치 어떻게 담가요?</h1>
-    <div class="menu"><button class="btn" id="btnStart">김장 시작하기</button><button class="btn sub" id="btnDex1">김치 도감</button></div>
+    <div class="menu"><button class="btn" id="btnStart">김장 시작하기</button></div>
   </div>
 
   <div class="screen" id="intro">
@@ -146,6 +150,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
   </div>
 
   <div class="screen" id="select">
+    <button class="btn sub" id="btnHome">◀ 처음으로</button>
     <div class="bubble b headBubble" id="selBubble">오늘은 뭘 넣어볼까?</div>
     <div class="panel" id="ingPanel">
       <h3>🥬 기본 김장 재료</h3><div class="grid" id="gridBasic"></div>
@@ -195,7 +200,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
       <div class="bars" id="resBars"></div>
       <div class="detail" id="resDetail"></div>
     </div>
-    <div class="btns" id="evalBtns"><button class="btn sub" id="btnDex2">김치 도감</button><button class="btn" id="btnAgain">다시 만들기</button></div>
+    <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>
 
   <div class="screen" id="dex"><div class="box">
@@ -231,7 +236,7 @@ const INGS=[
  {k:'onion',n:'양파',g:'basic',L:0.95,sec:ngon(0.46,8),bands:[[0.1,'#b07a4a'],[0.9,'#e8d9c2'],[1,'#b07a4a']],inner:'#f5efe2',st:{sweet:1,spicy:1},d:'달큰 매콤'},
  {k:'pear',n:'배',g:'basic',L:0.95,sec:ngon(0.46,8),bands:[[1,'#d6c062']],inner:'#fbf6dc',st:{sweet:2,cool:1},d:'단맛과 시원함'},
  {k:'cucumber',n:'오이',g:'basic',L:2.0,taper:[0.8,1],sec:ngon(0.2,7),bands:[[1,'#3e7a32']],inner:'#d8ecb0',st:{cool:2},d:'아삭 시원'},
- {k:'oyster',n:'굴',g:'basic',L:0.7,sec:halfEllipse(0.35,0.2,6),bands:[[1,'#cfc7bd']],inner:'#e9e2d6',st:{umami:2,salty:1},d:'바다의 감칠맛'},
+ {k:'oyster',taste:'싱싱한 굴의 바다 향과 갓 버무린 매콤함.',n:'굴',g:'basic',L:0.7,sec:halfEllipse(0.35,0.2,6),bands:[[1,'#cfc7bd']],inner:'#e9e2d6',st:{umami:2,salty:1},d:'바다의 감칠맛'},
  {k:'watermelon',n:'수박',g:'weird',L:1.3,sec:ngon(0.62,9),bands:[[0.1,'#2f6b2a'],[0.2,'#1f4d1d'],[0.3,'#2f6b2a'],[0.4,'#1f4d1d'],[0.5,'#2f6b2a'],[0.6,'#1f4d1d'],[0.7,'#2f6b2a'],[0.8,'#1f4d1d'],[0.9,'#2f6b2a'],[1,'#1f4d1d']],inner:'#e8455a',st:{sweet:2,cool:1,weird:2},d:'여름 그 자체'},
  {k:'dujjon',n:'두쫀쿠',g:'weird',L:0.55,sec:halfEllipse(0.48,0.34,8),bands:[[1,'#6b4a2e']],inner:'#8fb25a',st:{sweet:3,weird:3},d:'두바이 쫀득 쿠키'},
  {k:'mintchoco',n:'민트초코',g:'weird',L:1.2,sec:rect(0.8,0.5),bands:[[1,'#5a3a24']],inner:'#8fe0c8',st:{sweet:2,cool:1,weird:3},d:'호불호 끝판왕'},
@@ -278,20 +283,20 @@ const STORE=Object.fromEntries(STORES.map(s=>[s.k,s]));
 // 숨은 레시피 (위에서부터 먼저 맞는 것 하나)
 const has=(c,k)=>c.sel.includes(k), sp=(c,k)=>c.season[k]||0, weirdCnt=c=>c.sel.filter(k=>ING[k].g==='weird').length+SEAS.filter(s=>s.weird&&sp(c,s.k)>0).length;
 const RECIPES=[
- {k:'nothing',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'얘야… 양념은 어디 갔니? 그냥 생야채구나 허허'},
- {k:'pizza',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치냐 피자냐! 근데 애들은 좋아하겄다~'},
- {k:'colamelon',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터진다! 이건 화채여 김치여?'},
- {k:'dessert',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를… 니 할아버지가 보면 기절하겄다'},
- {k:'cvs',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'요즘 젊은 애들은 이런 걸 먹냐? 치약 맛이 나는디?'},
- {k:'hawaii',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'새콤달콤하니… 의외로 고기랑 먹으면 괜찮겠구먼!'},
- {k:'hell',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 맵다! 물! 물 좀 다오! 혀가 불난다!'},
- {k:'sea',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'켁켁! 이건 소금이지 김치가 아니여!'},
- {k:'baek',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'아이고 고와라~ 시원한 백김치구나. 할미가 좋아하는 거여'},
- {k:'kkakdugi',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명이지! 아주 잘 했다!'},
- {k:'saengchae',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'밥에 쓱쓱 비벼 먹으면 딱이겄다~'},
+ {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'얘야… 양념은 어디 갔니? 그냥 생야채구나 허허'},
+ {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치냐 피자냐! 근데 애들은 좋아하겄다~'},
+ {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터진다! 이건 화채여 김치여?'},
+ {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를… 니 할아버지가 보면 기절하겄다'},
+ {k:'cvs',taste:'시원한 민트와 달콤한 초코, 치약 같은 상쾌함.',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'요즘 젊은 애들은 이런 걸 먹냐? 치약 맛이 나는디?'},
+ {k:'hawaii',taste:'새콤달콤한 파인애플이 매콤함을 감싸는 열대의 맛.',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'새콤달콤하니… 의외로 고기랑 먹으면 괜찮겠구먼!'},
+ {k:'hell',taste:'첫입부터 혀가 얼얼, 눈물 나게 매운 맛.',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 맵다! 물! 물 좀 다오! 혀가 불난다!'},
+ {k:'sea',taste:'바닷물을 그대로 마신 듯 짜디짠 맛.',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'켁켁! 이건 소금이지 김치가 아니여!'},
+ {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'아이고 고와라~ 시원한 백김치구나. 할미가 좋아하는 거여'},
+ {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명이지! 아주 잘 했다!'},
+ {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'밥에 쓱쓱 비벼 먹으면 딱이겄다~'},
  {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이에 수육 한 점이면 끝나는 거여!'},
- {k:'mukeunji',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'이건 내년까지 두고 먹어도 되겄다. 진짜 장인이네!'},
- {k:'classic',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'아이고 우리 강아지! 할미 김치랑 똑같다 똑같어!'},
+ {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'이건 내년까지 두고 먹어도 되겄다. 진짜 장인이네!'},
+ {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'아이고 우리 강아지! 할미 김치랑 똑같다 똑같어!'},
 ];
 
 // 할머니 반응 (조건 맞는 것 최대 3개)
@@ -326,6 +331,7 @@ function stats(withSeason){const t=Object.fromEntries(STATS.map(s=>[s[0],0]));
   if(withSeason)for(const[k,n]of Object.entries(S.season))for(const[a,v]of Object.entries(SEA[k].st))t[a]+=v*n;
   return t;}
 function resetRound(){S.sel=[];S.cut={};S.pieces=[];S.season={};S.store=null;S.photo=null;S.plate=null;}
+function dexOpen(){const d=document.getElementById('dex');return d&&d.classList.contains('on');}
 let DEX={found:{},recent:[]};
 try{const d=JSON.parse(localStorage.getItem('kimchi-dex-v1')||'null');if(d&&d.found)DEX=d;}catch(e){}
 function saveDex(){try{localStorage.setItem('kimchi-dex-v1',JSON.stringify(DEX));}catch(e){}}
@@ -340,7 +346,15 @@ let AC=null;function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkit
 addEventListener('pointerdown',ac);
 function noise(dur,freq,q,vol){const a=ac();if(!a)return;const b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(a.destination);s.start();}
 function tone(f0,f1,dur,vol,type){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,a.currentTime);o.frequency.exponentialRampToValueAtTime(f1,a.currentTime+dur);g.gain.setValueAtTime(vol,a.currentTime);g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+dur);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+dur);}
-const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},boing(){tone(300,700,0.18,0.25,'triangle');}};
+function squelch(t0,dur,f,vol){const a=ac();if(!a)return;const st=a.currentTime+(t0||0);const n=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<n;i++){const x=i/n;d[i]=(Math.random()*2-1)*Math.pow(Math.sin(Math.PI*x),1.5);}
+  const s=a.createBufferSource();s.buffer=buf;const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;
+  bp.frequency.setValueAtTime(f*0.6,st);bp.frequency.exponentialRampToValueAtTime(f*1.8,st+dur*0.45);bp.frequency.exponentialRampToValueAtTime(f*0.7,st+dur);
+  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1800;const g=a.createGain();g.gain.value=vol;
+  s.connect(bp).connect(lp).connect(g).connect(a.destination);s.start(st);
+  const o=a.createOscillator(),og=a.createGain();o.type='sine';o.frequency.setValueAtTime(f*0.9,st+dur*0.2);o.frequency.exponentialRampToValueAtTime(f*2.2,st+dur*0.55);
+  og.gain.setValueAtTime(0.0001,st);og.gain.exponentialRampToValueAtTime(vol*0.35,st+dur*0.3);og.gain.exponentialRampToValueAtTime(0.0001,st+dur*0.6);o.connect(og).connect(a.destination);o.start(st);o.stop(st+dur);}
+const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},stir(total){for(let t=0;t<(total||1.4);t+=0.16+Math.random()*0.08)squelch(t,0.11+Math.random()*0.07,260+Math.random()*220,0.9);},boing(){tone(300,700,0.18,0.25,'triangle');}};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1600);}
 const hex=c=>new THREE.Color(c);
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -767,7 +781,7 @@ let pointerDown=false;
 canvas.addEventListener('pointerdown',e=>{pointerDown=true;setMouse(e);handlers.down&&handlers.down(e);});
 addEventListener('pointerup',e=>{pointerDown=false;handlers.up&&handlers.up(e);});
 canvas.addEventListener('pointermove',e=>{setMouse(e);handlers.move&&handlers.move(e);});
-addEventListener('keydown',e=>{if(e.code==='Space'&&handlers.key){e.preventDefault();handlers.key();}});
+addEventListener('keydown',e=>{if(e.code==='Space'&&handlers.key&&!dexOpen()){e.preventDefault();handlers.key();}});
 let handlers={};
 
 /* ---------- CUT ---------- */
@@ -893,7 +907,7 @@ function updSeasonUI(){SEAS.forEach(s=>{const e=document.querySelector(`#lbl_${s
   $('btnToMix').textContent=any?'버무리러 가기 ▶':'양념 없이 버무리기 ▶';}
 function unmix(){if(SEASON.paste){scene.remove(SEASON.paste);SEASON.paste=null;}SEASON.blobs.forEach(b=>b.visible=true);SEASON.mixed=false;}
 $('btnSeasonReset').onclick=()=>{SFX.click();S.season={};SEASON.blobs.forEach(b=>scene.remove(b));SEASON.blobs=[];unmix();updSeasonUI();coach('seasonCoach','다 비웠다! 처음부터 다시 해 봐라~');};
-$('btnStir').onclick=()=>{SFX.squish();SEASON.stir={t:0};$('btnStir').disabled=true;};
+$('btnStir').onclick=()=>{SFX.stir(1.4);SEASON.stir={t:0};$('btnStir').disabled=true;};
 $('btnToMix').onclick=()=>{SFX.click();go('mix');};
 function seasonFrame(dt){
   SEASON.items.forEach(g=>{const tgt=g===SEASON.hover?0.12:0;g.position.y+=(tgt-g.position.y)*Math.min(1,dt*12);const s=g.userData.s,el=$('lbl_'+s.k);if(el){const p=toScreen(g.position.clone().add(new THREE.Vector3(0,0.95,0)));el.style.left=p.x+'px';el.style.top=p.y+'px';}});
@@ -930,7 +944,7 @@ function mixMove(){const hit=planeHit(0.35);if(!hit)return;MIX.cursor=hit;
   if(pointerDown){if(MIX.last){const d=hit.clone().sub(MIX.last);const len=d.length();if(len>0.001&&len<1){
       MIX.progress=Math.min(1,MIX.progress+len/38);
       MIX.items.forEach(m=>{const dd=m.position.distanceTo(hit);if(dd<0.75){m.userData.v.addScaledVector(d,6*(1-dd/0.75));m.userData.v.y+=len*2.5;m.userData.spin.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(len*30);}});
-      if(Math.random()<len*1.5)SFX.squish();}}MIX.last=hit.clone();}}
+      if(Math.random()<len*1.5)squelch(0,0.1+Math.random()*0.06,240+Math.random()*200,0.6);}}MIX.last=hit.clone();}}
 function mixFrame(dt){
   const g=MIX.glove;if(MIX.cursor){const ty=pointerDown?0.55:1.0;g.position.x+=(MIX.cursor.x-g.position.x)*Math.min(1,dt*16);g.position.z+=(MIX.cursor.z+0.15-g.position.z)*Math.min(1,dt*16);g.position.y+=(ty-g.position.y)*Math.min(1,dt*12);g.rotation.y=Math.sin(performance.now()/300)*0.15;}
   const coat=MIX.sauce?MIX.progress:0;
@@ -1104,11 +1118,15 @@ function genName(c){const st=STORE[c.store].pre;
 function thumbsScore(c,recipe){if(recipe&&['classic','mukeunji','baek','kkakdugi'].includes(recipe.k))return 5;
   let s=3;const g=sp(c,'gochu');if(g>=1&&g<=5)s++;if(c.stat.salty>=1&&c.stat.salty<=5)s++;if(c.stat.weird>=3)s--;if(c.stat.weird>=6)s--;if(c.stat.salty>=7||c.stat.spicy>=8)s--;if(c.stat.umami>=2)s+=0.5;return Math.max(1,Math.min(5,Math.round(s)));}
 let EV=null;
+function platePhoto(){try{const pc=new THREE.PerspectiveCamera(30,4/3,0.05,20);const pg=MK.plateGrp.position;pc.position.set(pg.x+0.03,pg.y+0.95,pg.z+0.8);pc.lookAt(pg.x,pg.y,pg.z);
+  const vis=GRANDMA.root.visible;GRANDMA.root.visible=false;MK.scene.updateMatrixWorld(true);
+  R.setViewport(0,0,1280,720);R.setSize(640,480,false);R.render(MK.scene,pc);const url=R.domElement.toDataURL('image/jpeg',0.82);
+  R.setSize(1280,720,false);GRANDMA.root.visible=vis;return url;}catch(e){console.warn(e);return S.photo;}}
 function enterEval(){
   scene=MK.scene;setCam([0.15,1.5,2.75],[0.15,1.12,0],40);
   // the kimchi she made, on grandma's plate
   MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=m.clone();n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
-  shadowAll(MK.plateGrp);
+  shadowAll(MK.plateGrp);S.photo=platePhoto();
   // player in the video call
   setInset('p',24,456,250,240);PLAYER.root.rotation.y=0;PLAYER.setPose('phone');PLAYER.setExpr('worry');
   GRANDMA.setPose('look');GRANDMA.setExpr('smile');GRANDMA.look=0;
@@ -1141,10 +1159,11 @@ $('btnAgain').onclick=()=>{SFX.click();resetRound();GRANDMA.setPose('idle');go('
 
 /* ---------- DEX ---------- */
 function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent=`숨은 김치 ${f} / ${RECIPES.length} 발견`;
-  $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
+  $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b><span class="taste">${r.taste||''}</span></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
   $('dexRecent').innerHTML=DEX.recent.length?DEX.recent.map(r=>`<div class="dcard"><img src="${r.photo||''}"><b style="font-size:15px">${r.n}</b></div>`).join(''):'<span class="hint">아직 만든 김치가 없어요</span>';
   $('dex').classList.add('on');}
-$('btnDex1').onclick=$('btnDex2').onclick=()=>{SFX.click();openDex();};
+$('btnDexFloat').onclick=()=>{SFX.click();openDex();};
+$('btnHome').onclick=()=>{SFX.click();resetRound();go('title');};
 $('btnDexClose').onclick=()=>{SFX.click();$('dex').classList.remove('on');};
 $('btnStart').onclick=()=>{SFX.click();resetRound();go('intro');};
 
