@@ -700,7 +700,10 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
     while(curK!==startK&&guard++<5000){const cand=(ends.get(curK)||[]).find(([j])=>!used[j]);if(!cand)break;const [j,e]=cand;used[j]=true;const nxt=segs[j][1-e];curK=keyOf(nxt);if(curK!==startK)loop.push(nxt);}
     if(loop.length<3)continue;
     const contour=loop.map(p=>new THREE.Vector2(p[U],p[1]));let tris;try{tris=THREE.ShapeUtils.triangulateShape(contour,[]);}catch(e){continue;}
-    const cc=hex(capColor);tris.forEach(t=>{const k=0.95+Math.random()*0.08;for(const id of t){out.push(...loop[id]);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
+    const cc=hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
+      const e1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],e2=[c2[0]-a[0],c2[1]-a[1],c2[2]-a[2]];const nA=A===0?e1[1]*e2[2]-e1[2]*e2[1]:e1[0]*e2[1]-e1[1]*e2[0];
+      if(Math.sign(nA)!==want)[b,c2]=[c2,b]; // 단면이 잘린 쪽 바깥을 보도록 방향 맞춤
+      for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
 function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
   let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
