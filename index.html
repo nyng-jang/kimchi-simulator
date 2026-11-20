@@ -677,7 +677,7 @@ function loadAssets(){
 /* ---------- 평면 자르기: 반공간으로 자르고 잘린 면(단면)을 채움 ---------- */
 function clipHalf(pos,col,axis,c,keepGreater,capColor){
   const out=[],oc=[],segs=[];const A=axis==='x'?0:2;
-  const keyOf=(p)=>p.map(v=>v.toFixed(5)).join(',');
+  const keyOf=(p)=>p.map(v=>(Math.round(v*1e4)+0)).join(','); // -0/0, 미세 오차를 같은 점으로
   const inside=(p)=>keepGreater?p[A]>=c:p[A]<=c;
   const isect=(P,Q,cp,cq)=>{ // 같은 변은 항상 같은 순서로 계산해 이웃 삼각형과 정확히 같은 점이 나오게
     let a=P,b=Q,ca=cp,cb=cq;if(keyOf(a)>keyOf(b)){a=Q;b=P;ca=cq;cb=cp;}
