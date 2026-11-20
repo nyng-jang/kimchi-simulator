@@ -232,7 +232,7 @@ const INGS=[
  {k:'cucumber',n:'오이',g:'basic',L:2.0,taper:[0.8,1],sec:ngon(0.2,7),bands:[[1,'#3e7a32']],inner:'#d8ecb0',st:{cool:2},d:'아삭 시원'},
  {k:'oyster',n:'굴',g:'basic',L:0.7,sec:halfEllipse(0.35,0.2,6),bands:[[1,'#cfc7bd']],inner:'#e9e2d6',st:{umami:2,salty:1},d:'바다의 감칠맛'},
  {k:'watermelon',n:'수박',g:'weird',L:1.3,sec:ngon(0.62,9),bands:[[0.1,'#2f6b2a'],[0.2,'#1f4d1d'],[0.3,'#2f6b2a'],[0.4,'#1f4d1d'],[0.5,'#2f6b2a'],[0.6,'#1f4d1d'],[0.7,'#2f6b2a'],[0.8,'#1f4d1d'],[0.9,'#2f6b2a'],[1,'#1f4d1d']],inner:'#e8455a',st:{sweet:2,cool:1,weird:2},d:'여름 그 자체'},
- {k:'dujjon',n:'두쫀쿠',g:'weird',L:0.9,sec:halfEllipse(0.48,0.34,8),bands:[[1,'#6b4a2e']],inner:'#8fb25a',st:{sweet:3,weird:3},d:'두바이 쫀득 쿠키'},
+ {k:'dujjon',n:'두쫀쿠',g:'weird',L:0.55,sec:halfEllipse(0.48,0.34,8),bands:[[1,'#6b4a2e']],inner:'#8fb25a',st:{sweet:3,weird:3},d:'두바이 쫀득 쿠키'},
  {k:'mintchoco',n:'민트초코',g:'weird',L:1.2,sec:rect(0.8,0.5),bands:[[1,'#5a3a24']],inner:'#8fe0c8',st:{sweet:2,cool:1,weird:3},d:'호불호 끝판왕'},
  {k:'cheese',n:'치즈',g:'weird',L:1.0,sec:[[-0.5,0],[0.5,0],[0,0.55]],bands:[[1,'#f2c84b']],inner:'#ffe07a',st:{umami:1,weird:2},d:'쭈욱 늘어나요'},
  {k:'pineapple',n:'파인애플',g:'weird',L:1.4,taper:[0.6,1],sec:ngon(0.42,7),bands:[[0.15,'#4f8a3a'],[1,'#c48a2e']],inner:'#ffd84d',st:{sweet:2,weird:2},d:'김치에 파인애플?'},
@@ -980,7 +980,7 @@ const SEL_LINES={cabbage:['배추는 기본이지!','smile'],radish:['무 넣으
 /* ---------- 대야 + 낙하 물리 (재료 무게에 따라 튕겨 나감) ---------- */
 const WEIGHT={cabbage:3,radish:2.4,mustard:0.3,leek:0.4,chive:0.2,water:0.25,onion:1,pear:1.4,cucumber:0.8,oyster:0.3,watermelon:8,dujjon:0.6,mintchoco:0.7,cheese:0.8,pineapple:2.6};
 const BOUNCE={watermelon:0.35,cabbage:0.3,radish:0.35,dujjon:0.6,mintchoco:0.5,cheese:0.45,pineapple:0.4,oyster:0.5};
-const SIZE={watermelon:0.3,cabbage:0.28,pineapple:0.26,radish:0.26};
+const SIZE={watermelon:0.3,cabbage:0.28,pineapple:0.26,radish:0.26,dujjon:0.16};
 const TUB={x:0.32,y:0.93,z:0.5,r:0.4,h:0.26};
 const TUB_RB=TUB.r*0.6, TUB_RT=TUB.r*0.96, TUB_FLOOR=TUB.y+0.06, TUB_TOP=TUB.y+TUB.h;
 const GRAV=-6.2;
