@@ -133,7 +133,7 @@ function updSeasonUI(){SEAS.forEach(s=>{const e=document.querySelector(`#lbl_${s
   $('btnToMix').textContent=any?'버무리러 가기 ▶':'양념 없이 버무리기 ▶';}
 function unmix(){if(SEASON.paste){scene.remove(SEASON.paste);SEASON.paste=null;}SEASON.blobs.forEach(b=>b.visible=true);SEASON.mixed=false;}
 $('btnSeasonReset').onclick=()=>{SFX.click();S.season={};SEASON.blobs.forEach(b=>scene.remove(b));SEASON.blobs=[];unmix();updSeasonUI();coach('seasonCoach','다 비웠다! 처음부터 다시 해 봐라~');};
-$('btnStir').onclick=()=>{SFX.stir(1.4);SEASON.stir={t:0};$('btnStir').disabled=true;};
+$('btnStir').onclick=()=>{SFX.stir(1.5);SEASON.stir={t:0};$('btnStir').disabled=true;};
 $('btnToMix').onclick=()=>{SFX.click();go('mix');};
 function seasonFrame(dt){
   SEASON.items.forEach(g=>{const tgt=g===SEASON.hover?0.12:0;g.position.y+=(tgt-g.position.y)*Math.min(1,dt*12);const s=g.userData.s,el=$('lbl_'+s.k);if(el){const p=toScreen(g.position.clone().add(new THREE.Vector3(0,0.95,0)));el.style.left=p.x+'px';el.style.top=p.y+'px';}});
@@ -170,7 +170,7 @@ function mixMove(){const hit=planeHit(0.35);if(!hit)return;MIX.cursor=hit;
   if(pointerDown){if(MIX.last){const d=hit.clone().sub(MIX.last);const len=d.length();if(len>0.001&&len<1){
       MIX.progress=Math.min(1,MIX.progress+len/38);
       MIX.items.forEach(m=>{const dd=m.position.distanceTo(hit);if(dd<0.75){m.userData.v.addScaledVector(d,6*(1-dd/0.75));m.userData.v.y+=len*2.5;m.userData.spin.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(len*30);}});
-      if(Math.random()<len*1.5)squelch(0,0.1+Math.random()*0.06,240+Math.random()*200,0.6);}}MIX.last=hit.clone();}}
+      if(Math.random()<len*1.5)SFX.squish();}}MIX.last=hit.clone();}}
 function mixFrame(dt){
   const g=MIX.glove;if(MIX.cursor){const ty=pointerDown?0.55:1.0;g.position.x+=(MIX.cursor.x-g.position.x)*Math.min(1,dt*16);g.position.z+=(MIX.cursor.z+0.15-g.position.z)*Math.min(1,dt*16);g.position.y+=(ty-g.position.y)*Math.min(1,dt*12);g.rotation.y=Math.sin(performance.now()/300)*0.15;}
   const coat=MIX.sauce?MIX.progress:0;

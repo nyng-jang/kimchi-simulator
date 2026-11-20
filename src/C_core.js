@@ -25,13 +25,13 @@ function noise(dur,freq,q,vol){const a=ac();if(!a)return;const b=a.createBuffer(
 function tone(f0,f1,dur,vol,type){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,a.currentTime);o.frequency.exponentialRampToValueAtTime(f1,a.currentTime+dur);g.gain.setValueAtTime(vol,a.currentTime);g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+dur);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+dur);}
 function squelch(t0,dur,f,vol){const a=ac();if(!a)return;const st=a.currentTime+(t0||0);const n=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
   for(let i=0;i<n;i++){const x=i/n;d[i]=(Math.random()*2-1)*Math.pow(Math.sin(Math.PI*x),1.5);}
-  const s=a.createBufferSource();s.buffer=buf;const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=6;
+  const s=a.createBufferSource();s.buffer=buf;const bp=a.createBiquadFilter();bp.type='bandpass';bp.Q.value=3.5;
   bp.frequency.setValueAtTime(f*0.6,st);bp.frequency.exponentialRampToValueAtTime(f*1.8,st+dur*0.45);bp.frequency.exponentialRampToValueAtTime(f*0.7,st+dur);
-  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1800;const g=a.createGain();g.gain.value=vol;
+  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;const g=a.createGain();g.gain.value=vol;
   s.connect(bp).connect(lp).connect(g).connect(a.destination);s.start(st);
   const o=a.createOscillator(),og=a.createGain();o.type='sine';o.frequency.setValueAtTime(f*0.9,st+dur*0.2);o.frequency.exponentialRampToValueAtTime(f*2.2,st+dur*0.55);
   og.gain.setValueAtTime(0.0001,st);og.gain.exponentialRampToValueAtTime(vol*0.35,st+dur*0.3);og.gain.exponentialRampToValueAtTime(0.0001,st+dur*0.6);o.connect(og).connect(a.destination);o.start(st);o.stop(st+dur);}
-const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},stir(total){for(let t=0;t<(total||1.4);t+=0.16+Math.random()*0.08)squelch(t,0.11+Math.random()*0.07,260+Math.random()*220,0.9);},boing(){tone(300,700,0.18,0.25,'triangle');}};
+const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},stir(total){let t=0;while(t<(total||1.5)){squelch(t,0.18+Math.random()*0.12,150+Math.random()*130,1.3);if(Math.random()<0.6)squelch(t+0.05,0.12,320+Math.random()*160,0.7);tone(110,60,0.12,0.35);t+=0.13+Math.random()*0.07;}},boing(){tone(300,700,0.18,0.25,'triangle');}};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1600);}
 const hex=c=>new THREE.Color(c);
 const rnd=(a,b)=>a+Math.random()*(b-a);
