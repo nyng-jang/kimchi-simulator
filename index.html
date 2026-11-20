@@ -956,7 +956,7 @@ function setCam(p,l,fov){camera.fov=fov||40;camera.updateProjectionMatrix();came
 function go(id){document.querySelectorAll('.screen').forEach(s=>{if(s.id!=='dex')s.classList.remove('on');});$(id).classList.add('on');
   const idx=STEPNAMES.findIndex(s=>s[0]===id);const sb=$('steps');
   if(idx>=0){sb.classList.add('on');sb.innerHTML=STEPNAMES.map((s,i)=>`<span class="${i<idx?'done':i===idx?'cur':''}">${i+1}. ${s[1]}</span>`).join('');}else sb.classList.remove('on');
-  handlers={};canvas.style.cursor='default';setInset(null);PLAYER.root.visible=true;
+  handlers={};canvas.style.cursor='default';setInset(null);PLAYER.root.visible=true;PLAYER.root.position.set(0,0,0.05);
   if(['cut','season','mix'].includes(id)){setInset('g',22,462,224,236);camera.fov=48;camera.updateProjectionMatrix();GRANDMA.setPose('idle');GRANDMA.setExpr('smile');}
   ({title:enterTitle,intro:enterIntro,select:enterSelect,cut:enterCut,season:enterSeason,mix:enterMix,store:enterStore,eval:enterEval}[id]||(()=>{}))();}
 function headPos(C,up){const v=new THREE.Vector3();C.j.head.getWorldPosition(v);v.y+=up||0.42;return toScreen(v);}
@@ -1025,7 +1025,7 @@ function stepPhysics(dt){const n=4,h=dt/n;
           if(!B.landed&&B.v.y>=0){B.landed=true;SFX.plop();if(B.mass>=1)splash(B);}if(!A.landed&&A.v.y>=0){A.landed=true;SFX.plop();if(A.mass>=1)splash(A);}}}}
   }
   BODIES.forEach(b=>{b.m.position.copy(b.p);const sp=b.w.length();if(sp>0.01){b.m.rotateOnWorldAxis(b.w.clone().normalize(),sp*dt);}const rest=b.v.length()<0.2;b.w.multiplyScalar(rest?0.9:0.995);});}
-function enterSelect(){scene=K3.scene;K3.items.clear();BODIES=[];PLAYER.root.rotation.y=0;PLAYER.setPose('idle');PLAYER.setExpr('smile');PLAYER.look=0;
+function enterSelect(){scene=K3.scene;K3.items.clear();BODIES=[];PLAYER.root.rotation.y=0;PLAYER.root.position.set(TUB.x,0,0.16);PLAYER.setPose('idle');PLAYER.setExpr('smile');PLAYER.look=0;
   setCam([0.95,2.05,2.75],[0.95,1.2,0.25],40);
   const tub=basin(TUB.r,TUB.h,'#c3c8cd');tub.position.set(TUB.x,TUB.y,TUB.z);shadowAll(tub);K3.items.add(tub);
   const card=i=>`<div class="card ${i.g==='weird'?'weird':''} ${S.sel.includes(i.k)?'on':''}" data-k="${i.k}"><img src="${THUMB[i.k]}" alt=""><b>${i.n}</b><i>${i.d}</i></div>`;
