@@ -217,8 +217,6 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
       <div class="bars" id="resBars"></div>
       <div class="score" id="resScore"></div>
       <div class="detail" id="resDetail"></div>
-      <div class="nick"><input id="nickInput" maxlength="16" autocomplete="off"><button class="btn" id="btnNick">이름 붙이기</button></div>
-      <div class="nnote" id="nickNote"></div>
     </div>
     <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>
@@ -227,8 +225,6 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
     <div class="dhead"><h2>📖 김치 도감</h2><div class="cnt" id="dexCnt"></div><button class="btn sub close" id="btnDexClose">닫기 ✕</button></div>
     <h2 class="sub2">숨은 김치</h2>
     <div class="dgrid" id="dexGrid"></div>
-    <h2 class="sub2">나만의 레시피</h2>
-    <div class="dgrid" id="dexMine"></div>
     <h2 class="sub2">최근에 만든 김치</h2>
     <div class="dgrid" id="dexRecent"></div>
   </div></div>
@@ -1171,10 +1167,6 @@ function scoreKimchi(c){const st=c.stat,sv=k=>sp(c,k),spoons=Object.values(c.sea
   const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 감점',-pen,0,`엉뚱한 재료·양념 ${weirdI+weirdS}개`]);
   const total=Math.max(0,P.reduce((x,p)=>x+p[1],0));const thumbs=total>=85?5:total>=70?4:total>=55?3:total>=35?2:1;
   return {total,thumbs,parts:P};}
-const TASTE_W={salty:'짭짤하고',spicy:'매콤하고',sweet:'달큰하고',umami:'감칠맛 나고',cool:'시원하고',weird:'요상하고'};
-function tasteLine(c){const top=Object.entries(c.stat).sort((a,b)=>b[1]-a[1]).filter(e=>e[1]>=1).slice(0,2).map(e=>TASTE_W[e[0]]);
-  return top.length?(top.join(' ').replace(/고$/,'')+'은 맛').replace('나은 맛','나는 맛').replace('하은 맛','한 맛').replace('큰은','큰').replace('콤은','콤한').replace('짤은','짤한'):'담백한 맛';}
-function recipeSig(c){return JSON.stringify([c.sel.slice().sort(),c.sel.slice().sort().map(k=>c.cut[k]),Object.keys(c.season).filter(k=>c.season[k]).sort().map(k=>k+c.season[k]),c.store]);}
 let EV=null,EVINFO=null;
 function platePhoto(){try{const pc=new THREE.PerspectiveCamera(30,4/3,0.05,20);const pg=MK.plateGrp.position;pc.position.set(pg.x+0.03,pg.y+0.95,pg.z+0.8);pc.lookAt(pg.x,pg.y,pg.z);
   const vis=GRANDMA.root.visible;GRANDMA.root.visible=false;MK.scene.updateMatrixWorld(true);
@@ -1193,7 +1185,7 @@ function enterEval(){
   if(recipe)DEX.found[recipe.k]={photo:S.photo,at:Date.now()};
   const SC=scoreKimchi(c),th=SC.thumbs;
   DEX.recent.unshift({n:name,photo:S.photo,score:SC.total});DEX.recent=DEX.recent.slice(0,8);saveDex();
-  EVINFO={c,recipe,name,SC,sig:recipeSig(c),taste:tasteLine(c)};
+
   const lines=composeReactions(c,recipe);
   lines.push(CLOSERS[Math.floor(Math.random()*CLOSERS.length)]);
   // reaction choice
@@ -1205,7 +1197,6 @@ function enterEval(){
   $('resThumbs').innerHTML='할머니 엄지 '+[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');
   $('resBars').innerHTML=STATS.map(([k,n,col])=>`<div class="bar"><label>${n}</label><div class="t"><div data-w="${Math.min(100,c.stat[k]/10*100)}" style="background:${col}"></div></div><span class="v">${Math.round(c.stat[k]*10)/10}</span></div>`).join('');
   $('resScore').innerHTML=`<div class="tot">할머니 점수 <b>${SC.total}</b>점</div>`+SC.parts.map(([n,p,m,why])=>`<div class="sc"><span>${n}</span><b>${m?p+'/'+m:p}</b><i>${why}</i></div>`).join('');
-  setupNaming();
   $('resDetail').textContent=`${c.sel.map(k=>ING[k].n).join(', ')} · 양념 ${Object.values(c.season).reduce((a,b)=>a+b,0)}숟갈 · ${STORE[c.store].n}`;
   GRANDMA.say(1.6);
   EV={t:0,steps:[
@@ -1218,26 +1209,9 @@ function enterEval(){
   frameFn=(dt)=>{EV.t+=dt;while(EV.steps.length&&EV.t>=EV.steps[0][0])EV.steps.shift()[1]();};}
 $('btnAgain').onclick=()=>{SFX.click();resetRound();GRANDMA.setPose('idle');go('select');};
 
-/* ---------- 이름 짓기 · 나만의 레시피 ---------- */
-const MY_MIN=70; // 엄지 4개 이상
-function setupNaming(){const {name,recipe,SC,sig}=EVINFO;const inp=$('nickInput');inp.value='';inp.placeholder=name;
-  const exist=DEX.custom.find(r=>r.sig===sig);const ok=!recipe&&SC.total>=MY_MIN;
-  $('btnNick').textContent=ok?(exist?'레시피 이름 바꾸기':'나만의 레시피로 등록'):'이름 붙이기';
-  $('nickNote').textContent=recipe?'숨은 김치예요. 붙인 이름은 최근에 만든 김치에 남아요.':ok?(exist?'이미 등록된 레시피예요.':`${SC.total}점! 도감에 나만의 레시피로 올릴 수 있어요.`):`${MY_MIN}점(엄지 4개) 이상이면 나만의 레시피로 도감에 등록돼요.`;}
-$('btnNick').onclick=()=>{const {name,recipe,SC,sig,taste,c}=EVINFO;const nick=($('nickInput').value||'').trim().slice(0,16)||name;
-  if(DEX.recent[0])DEX.recent[0].n=nick;$('resName').textContent=nick;
-  if(!recipe&&SC.total>=MY_MIN){const ex=DEX.custom.find(r=>r.sig===sig);
-    if(ex){ex.n=nick;toast('레시피 이름을 바꿨어요');}
-    else{DEX.custom.unshift({sig,n:nick,photo:S.photo,score:SC.total,thumbs:SC.thumbs,taste,how:`${c.sel.map(k=>ING[k].n).join(', ')} · 양념 ${Object.entries(c.season).filter(e=>e[1]).map(([k,v])=>SEA[k].n+' '+v).join(', ')} · ${STORE[c.store].n}`,at:Date.now()});
-      DEX.custom=DEX.custom.slice(0,24);SFX.ding();toast('📖 나만의 레시피 등록!');GRANDMA.flash('laugh',1.5);GRANDMA.say(1);}
-  }else toast('이름을 붙였어요');
-  saveDex();setupNaming();};
-$('nickInput').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')$('btnNick').click();});
-
 /* ---------- DEX ---------- */
-function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent=`숨은 김치 ${f} / ${RECIPES.length} 발견 · 나만의 레시피 ${DEX.custom.length}개`;
+function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent=`숨은 김치 ${f} / ${RECIPES.length} 발견`;
   $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b><span class="taste">${r.taste||''}</span></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
-  $('dexMine').innerHTML=DEX.custom.length?DEX.custom.map(r=>`<div class="dcard mine"><img src="${r.photo||''}"><b>${r.n}</b><span class="taste">${r.taste} · ${'👍'.repeat(r.thumbs)} ${r.score}점</span><span class="how">${r.how}</span></div>`).join(''):'<span class="hint">할머니께 70점(엄지 4개) 이상 받은 내 김치를 등록해 보세요</span>';
   $('dexRecent').innerHTML=DEX.recent.length?DEX.recent.map(r=>`<div class="dcard"><img src="${r.photo||''}"><b style="font-size:15px">${r.n}</b></div>`).join(''):'<span class="hint">아직 만든 김치가 없어요</span>';
   $('dex').classList.add('on');}
 $('btnDexFloat').onclick=()=>{SFX.click();openDex();};
