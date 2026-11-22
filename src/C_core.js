@@ -257,7 +257,7 @@ function buildK3(){const sc=new THREE.Scene();sc.background=hex('#f1e4cf');light
   shadowAll(sc);floor.castShadow=false;wall.castShadow=false;
   const items=new THREE.Group();sc.add(items);
   PLAYER.root.position.set(0,0,0.05);sc.add(PLAYER.root);
-  return {scene:sc,items};}
+  return {scene:sc,items,board,decor:[board,scale,cb,ch]};}
 // 시장 (할머니 무대)
 function buildMarket(){const sc=new THREE.Scene();sc.background=hex('#e9dcc6');sc.fog=new THREE.Fog(0xe9dcc6,6,14);lights(sc,{shadow:true,sx:-2,sy:5,sz:3.5,sun:0.9});
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(16,12),mat('#cdbfa6'));floor.rotation.x=-Math.PI/2;sc.add(floor);

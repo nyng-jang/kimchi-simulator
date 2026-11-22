@@ -40,8 +40,10 @@ function loadIng(){
   coach('cutCoach',{cabbage:'배추는 포기로 길게 갈라야 양념이 잘 배지~',radish:'무는 깍둑썰면 깍두기, 채썰면 무생채여!',watermelon:'수박을…? 그래 일단 썰어 봐라 허허',dujjon:'그 과자도 써냐? 할미는 모르겄다~',leek:'파는 송송 채썰어도 좋고 큼직해도 좋고~'}[ing.k]||`${ing.n}은(는) 니 맘대로 썰어 봐라~`);}
 function coach(id,t){$(id).textContent=t;GRANDMA.say(Math.min(2.4,0.6+t.length*0.05));}
 function rebuildPieces(){
-  if(CUT.meshes)CUT.meshes.forEach(m=>CUT.group.remove(m));
-  CUT.meshes=CUT.pieces.map(p=>{const m=buildPiece(CUT.ing,p.x0,p.x1,p.z0,p.z1);m.userData.reg=p;m.position.set(m.userData.cx,m.userData.cy,m.userData.cz);m.userData.tgt=m.position.clone();CUT.group.add(m);return m;});
+  const keep=new Map();(CUT.meshes||[]).forEach(m=>{const r=m.userData.reg;keep.set([r.x0,r.x1,r.z0,r.z1].join('|'),m);});
+  CUT.meshes=CUT.pieces.map(p=>{const k=[p.x0,p.x1,p.z0,p.z1].join('|');const old=keep.get(k);if(old){keep.delete(k);old.userData.reg=p;return old;}  // 안 잘린 조각은 그대로 재사용
+    const m=buildPiece(CUT.ing,p.x0,p.x1,p.z0,p.z1);m.userData.reg=p;m.position.set(m.userData.cx,m.userData.cy,m.userData.cz);m.userData.tgt=m.position.clone();CUT.group.add(m);return m;});
+  keep.forEach(m=>{CUT.group.remove(m);m.geometry.dispose();});
   layoutPieces(true);}
 function layoutPieces(instant){const gap=0.13;const doneX=CUT.done.filter(c=>c.ax==='x').map(c=>c.p),doneZ=CUT.done.filter(c=>c.ax==='z').map(c=>c.p);
   CUT.meshes.forEach(m=>{const r=m.userData.reg,xc=(r.x0+r.x1)/2,zc=(r.z0+r.z1)/2;
@@ -106,7 +108,7 @@ function cutFrame(dt){
 /* ---------- SEASON ---------- */
 const SEASON={};
 function enterSeason(){
-  scene=new THREE.Scene();lights(scene);kitchen(scene);
+  $('seasonTip').classList.remove('hide');scene=new THREE.Scene();lights(scene);kitchen(scene);
   camera.position.set(0,3.6,3.2);camera.lookAt(0,0,-0.6);
   const bowl=basin(1.05,0.6,'#c3c8cd');bowl.position.set(0,0,0.45);scene.add(bowl);SEASON.bowl=bowl;
   SEASON.items=SEAS.map((s,i)=>{const g=container(s);const row=i<6?0:1,col=i%6;g.position.set(-2.75+col*1.1+(row?0.55:0),0,row?-2.25:-1.25);g.userData.s=s;scene.add(g);return g;});
@@ -119,7 +121,7 @@ function enterSeason(){
   handlers={down:seasonClick,move:seasonHover,up:null,key:null};frameFn=seasonFrame;}
 function seasonPick(){let best=null;SEASON.items.forEach(g=>{const h=ray.intersectObject(g,true);if(h.length&&(!best||h[0].distance<best.d))best={g,d:h[0].distance};});return best&&best.g;}
 function seasonHover(){const g=seasonPick();canvas.style.cursor=g?'pointer':'default';SEASON.hover=g;}
-function seasonClick(){const g=seasonPick();if(!g)return;const s=g.userData.s;if((S.season[s.k]||0)>=9){toast(`${s.n}은(는) 9숟갈까지만!`);return;}
+function seasonClick(){const g=seasonPick();if(!g)return;$('seasonTip').classList.add('hide');const s=g.userData.s;if((S.season[s.k]||0)>=9){toast(`${s.n}은(는) 9숟갈까지만!`);return;}
   if(SEASON.mixed){unmix();}
   S.season[s.k]=(S.season[s.k]||0)+1;SEASON.spoons.push({s,from:g.position.clone().add(new THREE.Vector3(0,0.7,0)),t:0});updSeasonUI();
   const lines={gochu:'고춧가루는 2~4숟갈이면 딱 좋아~',shrimp:'새우젓! 그렇지 그거여~',fishsauce:'액젓 들어가면 감칠맛이 확 살지',salt:'소금은 조금씩! 짜면 못 먹어~',mayo:'마요네즈를…? 허허 해 봐라',choco:'초코를 왜 넣냐 얘야~',cola:'콜라? 김치가 톡 쏘겄다!',sugar:'설탕 조금은 괜찮어',maesil:'매실청 넣으면 단맛이 은은하지',rice:'찹쌀풀 넣어야 양념이 착 붙어!'};

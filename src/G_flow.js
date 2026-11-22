@@ -11,11 +11,14 @@ function setCam(p,l,fov){camera.fov=fov||40;camera.updateProjectionMatrix();came
 function go(id){document.querySelectorAll('.screen').forEach(s=>{if(s.id!=='dex')s.classList.remove('on');});$(id).classList.add('on');
   const idx=STEPNAMES.findIndex(s=>s[0]===id);const sb=$('steps');
   if(idx>=0){sb.classList.add('on');sb.innerHTML=STEPNAMES.map((s,i)=>`<span class="${i<idx?'done':i===idx?'cur':''}">${i+1}. ${s[1]}</span>`).join('');}else sb.classList.remove('on');
-  handlers={};canvas.style.cursor='default';setInset(null);PLAYER.root.visible=true;PLAYER.root.position.set(0,0,0.05);
+  handlers={};canvas.style.cursor='default';setInset(null);PLAYER.root.visible=true;PLAYER.root.position.set(0,0,0.05);PLAYER.root.rotation.y=0;if(K3)K3.decor.forEach(o=>o.visible=true);
   if(['cut','season','mix'].includes(id)){setInset('g',22,462,224,236);camera.fov=48;camera.updateProjectionMatrix();GRANDMA.setPose('idle');GRANDMA.setExpr('smile');}
   ({title:enterTitle,intro:enterIntro,select:enterSelect,cut:enterCut,season:enterSeason,mix:enterMix,store:enterStore,eval:enterEval}[id]||(()=>{}))();}
 function headPos(C,up){const v=new THREE.Vector3();C.j.head.getWorldPosition(v);v.y+=up||0.42;return toScreen(v);}
-function placeBubble(el,C,up){const p=headPos(C,up);el.style.left=p.x+'px';el.style.top=p.y+'px';}
+function placeBubble(el,C,up,side){const p=headPos(C,up);const h=el.offsetHeight||50;
+  if(!side&&p.y-h>78){el.className=el.className.replace(/ ?side[LR]/g,'');el.style.left=p.x+'px';el.style.top=p.y+'px';return;}
+  const hp=headPos(C,0.12),sd=side||(hp.x>640?'L':'R');el.className=el.className.replace(/ ?side[LR]/g,'')+' side'+sd;
+  el.style.left=(hp.x+(sd==='L'?-58:58))+'px';el.style.top=hp.y+'px';}
 
 /* ---------- TITLE ---------- */
 function enterTitle(){scene=K3.scene;K3.items.clear();PLAYER.root.rotation.y=0;PLAYER.setPose('wave');PLAYER.setExpr('smile');PLAYER.look=0;
@@ -123,22 +126,26 @@ function camExitToStore(){if(CAMTW)return;
   })();}
 
 /* ---------- STORE ---------- */
-const STORE_X={now:-0.9,box:0,onggi:0.9};
-function enterStore(){scene=K3.scene;K3.items.clear();PLAYER.root.rotation.y=0;PLAYER.setPose('hold');PLAYER.setExpr('smile');
-  setCam([0,1.95,2.7],[0,1.15,0.3],42);
+const STORE_X={now:0.0,box:0.7,onggi:1.38},STORE_PX=-0.9;
+function enterStore(){scene=K3.scene;K3.items.clear();PLAYER.root.rotation.y=0.35;PLAYER.root.position.set(STORE_PX,0,0.05);PLAYER.setPose('hold');PLAYER.setExpr('smile');
+  setCam([0.35,1.85,2.55],[0.35,1.08,0.4],42);K3.decor.forEach(o=>o.visible=false);
   // basin of finished kimchi in her hands
   const hb=new THREE.Group();const b=basin(0.2,0.11,'#c5cacf');hb.add(b);const sc=MIX.sauce||hex('#e9edb8');const f=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.13,0.07,8),mat(sc));f.position.y=0.07;hb.add(f);
-  hb.position.set(0,1.12,0.34);hb.userData.held=true;K3.items.add(hb);
-  STORES.forEach(s=>{const m=storeModel(s.k);m.scale.setScalar(0.22);m.position.set(STORE_X[s.k],0.93,0.62);m.userData.store=s.k;shadowAll(m);K3.items.add(m);});
+  hb.position.set(STORE_PX+0.12,1.12,0.37);hb.userData.held=true;K3.items.add(hb);
+  STORES.forEach(s=>{const m=storeModel(s.k);m.scale.setScalar(0.24);m.position.set(STORE_X[s.k],0.93,0.62);m.userData.store=s.k;shadowAll(m);
+    m.userData.glow=[];m.traverse(o=>{if(o.isMesh&&!o.userData.isGlow){const gm=new THREE.Mesh(o.geometry,new THREE.MeshBasicMaterial({color:0xffd84d,side:THREE.BackSide,transparent:true,opacity:0.5,depthWrite:false}));gm.userData.isGlow=true;gm.scale.setScalar(1.12);o.add(gm);m.userData.glow.push(gm);}});
+    K3.items.add(m);});
   $('storeLbls').innerHTML=STORES.map(s=>`<div class="lbl" id="slbl_${s.k}">${s.n} · ${s.d}</div>`).join('');
   $('btnToEval').disabled=!S.store;$('storeBubble').textContent='어디에 담을까?';
-  handlers={down:storePick,move:()=>{const h=storeHit();canvas.style.cursor=h?'pointer':'default';}};
-  frameFn=(dt)=>{placeBubble($('storeBubble'),PLAYER,0.38);K3.items.children.forEach(o=>{if(o.userData.store){const on=o.userData.store===S.store;const ty=0.93+(on?Math.abs(Math.sin(performance.now()/250))*0.05:0);o.position.y+=(ty-o.position.y)*Math.min(1,dt*10);
-      const el=$('slbl_'+o.userData.store);const p=toScreen(o.position.clone().add(new THREE.Vector3(0,0.42,0)));el.style.left=p.x+'px';el.style.top=p.y+'px';el.classList.toggle('on',on);}});};}
-function storeHit(){let best=null;K3.items.children.forEach(o=>{if(!o.userData.store)return;const h=ray.intersectObject(o,true);if(h.length&&(!best||h[0].distance<best.d))best={o,d:h[0].distance};});return best&&best.o;}
+  handlers={down:storePick,move:()=>{const h=storeHit();STORE_HOVER=h;canvas.style.cursor=h?'pointer':'default';}};
+  frameFn=(dt)=>{placeBubble($('storeBubble'),PLAYER,0.38,'R');const tt=performance.now()/1000;K3.items.children.forEach(o=>{if(o.userData.store){const on=o.userData.store===S.store,hov=STORE_HOVER===o;
+      o.userData.glow.forEach(gm=>{gm.material.color.set(on?0xff8a3d:0xffd84d);gm.material.opacity=on?0.75+0.2*Math.sin(tt*6):hov?0.65:0.35+0.15*Math.sin(tt*2.5);gm.scale.setScalar(on?1.18:hov?1.15:1.11);});const ty=0.93+(on?Math.abs(Math.sin(performance.now()/250))*0.05:0);o.position.y+=(ty-o.position.y)*Math.min(1,dt*10);
+      const el=$('slbl_'+o.userData.store);const p=toScreen(o.position.clone().add(new THREE.Vector3(0,0.34,0)));el.style.left=p.x+'px';el.style.top=p.y+'px';el.classList.toggle('on',on);}});};}
+let STORE_HOVER=null;
+function storeHit(){let best=null;K3.items.children.forEach(o=>{if(!o.userData.store)return;const h=ray.intersectObject(o,true).filter(x=>!x.object.userData.isGlow);if(h.length&&(!best||h[0].distance<best.d))best={o,d:h[0].distance};});return best&&best.o;}
 function storePick(){const o=storeHit();if(!o)return;S.store=o.userData.store;SFX.boing();$('btnToEval').disabled=false;
   const L={now:['못 참겠어, 바로 먹을래!','laugh'],box:['김치통에 넣어서 익혀야지~','smile'],onggi:['항아리에 푹 묵혀 보자!','laugh']}[S.store];
-  $('storeBubble').textContent=L[0];PLAYER.flash(L[1],1.4);PLAYER.say(1);PLAYER.look=-STORE_X[S.store]*0.35;}
+  $('storeBubble').textContent=L[0];PLAYER.flash(L[1],1.4);PLAYER.say(1);PLAYER.look=0.25+(STORE_X[S.store]-STORE_X.now)*0.2;}
 $('btnToEval').onclick=()=>{SFX.click();PLAYER.look=0;go('eval');};
 
 /* ---------- EVAL ---------- */
@@ -234,7 +241,7 @@ $('btnDexClose').onclick=()=>{SFX.click();$('dex').classList.remove('on');};
 $('btnStart').onclick=()=>{SFX.click();resetRound();go('intro');};
 
 /* ---------- LOOP ---------- */
-let last=performance.now();
+let last=performance.now(),INSET_TICK=0;
 function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
   PLAYER.update(dt);GRANDMA.update(dt);
   if(frameFn)frameFn(dt);
@@ -245,7 +252,7 @@ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
     else{const hp=new THREE.Vector3();PLAYER.j.head.getWorldPosition(hp);cam.position.set(hp.x-0.1,hp.y+0.02,hp.z+1.05);cam.lookAt(hp.x,hp.y-0.05,hp.z);}
     cam.aspect=w/h;cam.updateProjectionMatrix();
     // hide the eval plate camera conflict: plate stays, fine
-    R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.setViewport(0,0,1280,720);}
+    R.shadowMap.autoUpdate=(INSET_TICK++%15===0);R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.shadowMap.autoUpdate=true;R.setViewport(0,0,1280,720);}
   requestAnimationFrame(loop);}
 window.addEventListener('load',()=>{loadAssets().then(info=>{console.log('assets:',info);ASSET_INFO=info;}).catch(e=>console.warn(e)).finally(()=>{
   try{makeThumbs();K3=buildK3();MK=buildMarket();}catch(e){console.error(e);}
