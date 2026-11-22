@@ -176,22 +176,22 @@ function scoreKimchi(c){const st=c.stat,sv=k=>sp(c,k),spoons=Object.values(c.sea
   const basics=c.sel.filter(k=>ING[k].g==='basic'),weirdI=c.sel.filter(k=>ING[k].g==='weird').length,weirdS=SEAS.filter(s=>s.weird&&sv(s.k)>0).length;
   const P=[];
   // 1) 간 25: 짠맛 2~4 딱 좋음
-  P.push(['간',Math.round(25*band(st.salty,[2,4],[1,5],[0.5,6.5])),25,st.salty<1?'싱거워요':st.salty>5?'너무 짜요':st.salty<2||st.salty>4?'간이 조금 아쉬워요':'간이 딱 좋아요']);
+  P.push(['간',Math.round(25*band(st.salty,[2,4],[1,5],[0.5,6.5])),25,st.salty<1?'뭔가 심심해요':st.salty>5?'물이 자꾸 당겨요':st.salty<2||st.salty>4?'간이 살짝 아쉬워요':'간이 딱 좋아요']);
   // 2) 맛 균형 25: 매운맛 2~5(10) + 감칠맛(10) + 단맛 과하지 않게(5)
   const spicy=10*band(st.spicy,[2,5],[1,6.5],[0.5,8]),umami=st.umami>=2.5?10:st.umami>=1.5?6:st.umami>=0.5?3:0,sweet=st.sweet<=3?5:st.sweet<=5?2:0;
-  P.push(['맛 균형',Math.round(spicy+umami+sweet),25,umami<6?'감칠맛이 부족해요':spicy<10?'매운맛이 어긋나요':sweet<5?'너무 달아요':'맛이 잘 어우러져요']);
+  P.push(['맛 균형',Math.round(spicy+umami+sweet),25,umami+spicy+sweet<25?'맛이 한쪽으로 쏠렸어요':'맛이 잘 어우러져요']);
   // 3) 재료 조화 20: 배추·무 바탕(8) + 기본 재료 3가지↑(6) + 향채(6), 엉뚱한 재료 하나당 -8, 엉뚱한 양념 하나당 -6
   let ing=(c.sel.some(k=>k==='cabbage'||k==='radish')?8:0)+(basics.length>=3?6:basics.length===2?3:0)+(c.sel.some(k=>['leek','chive','mustard','water'].includes(k))?6:0)-8*weirdI-6*weirdS;
-  P.push(['재료 조화',Math.max(0,ing),20,weirdI+weirdS?'엉뚱한 재료가 들어갔어요':ing>=20?'재료 구성이 좋아요':'재료가 조금 단출해요']);
+  P.push(['재료 조화',Math.max(0,ing),20,weirdI+weirdS?'김치라기엔 좀 낯설어요':ing>=20?'재료 구성이 좋아요':'어딘가 허전해요']);
   // 4) 손질 15: 재료마다 어울리는 썰기인지
   const fits=c.sel.map(k=>{const m=c.cut[k];if(ING[k].g==='weird')return .5;return (CUT_FIT[k]||{})[m]||0;});
   const cut=fits.length?15*fits.reduce((x,y)=>x+y,0)/fits.length:0;
-  P.push(['손질',Math.round(cut),15,cut>=13?'손질이 깔끔해요':'재료와 안 맞는 썰기가 있어요']);
+  P.push(['손질',Math.round(cut),15,cut>=13?'손질이 깔끔해요':'모양이 조금 어색해요']);
   // 5) 양념 완성도 15: 마늘(5) + 젓갈(5) + 생강·찹쌀풀(3) + 양념 양 적당 4~14숟갈(2)
   const sea=(sv('garlic')>=1?5:0)+(sv('shrimp')+sv('fishsauce')>=1?5:0)+(sv('ginger')+sv('rice')>=1?3:0)+(spoons>=4&&spoons<=14?2:0);
-  P.push(['양념',sea,15,sea>=13?'양념이 알차요':sv('garlic')<1?'마늘이 빠졌어요':sv('shrimp')+sv('fishsauce')<1?'젓갈이 빠졌어요':'양념이 조금 아쉬워요']);
+  P.push(['양념',sea,15,sea>=13?'양념이 알차요':'양념 맛이 덜 살아요']);
   // 6) 엉뚱함 감점: 엉뚱한 재료·양념 하나당 -12 (할머니 기준에서 김치가 아님)
-  const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 −'+pen,-pen,0,`엉뚱한 재료·양념 ${weirdI+weirdS}개`]);
+  const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 −'+pen,-pen,0,'할머니가 처음 보는 게 들어갔어요']);
   const total=Math.max(0,P.reduce((x,p)=>x+p[1],0));const thumbs=total>=85?5:total>=70?4:total>=55?3:total>=35?2:1;
   return {total,thumbs,parts:P};}
 let EV=null,EVINFO=null;
