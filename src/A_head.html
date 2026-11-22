@@ -25,9 +25,12 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .btn:disabled{background:#bba89a;box-shadow:0 5px 0 #8d7d70;cursor:not-allowed}
 #steps{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:none;gap:4px;z-index:30;background:rgba(255,248,236,.92);padding:6px 8px;border-radius:30px;box-shadow:0 3px 10px rgba(0,0,0,.15)}
 #steps.on{display:flex}
-#steps span{font-family:'Do Hyeon';font-size:15px;padding:5px 11px;border-radius:20px;color:#a08a76;white-space:nowrap}
-#steps span.cur{background:#d9482f;color:#fff}
-#steps span.done{color:#5b8a3a}
+#steps{align-items:center}
+#steps span{font-family:'Do Hyeon';font-size:15px;padding:4px 10px 4px 5px;border-radius:20px;color:#b3a698;white-space:nowrap;display:flex;align-items:center;gap:5px}
+#steps span i{font-style:normal;width:20px;height:20px;border-radius:50%;background:#e6ddd2;color:#a3968a;display:flex;align-items:center;justify-content:center;font-size:12px}
+#steps span.cur{background:#d9482f;color:#fff}#steps span.cur i{background:#fff;color:#d9482f}
+#steps span.done{color:#5b8a3a}#steps span.done i{background:#6c9c46;color:#fff}
+#steps b.ln{width:12px;height:2px;border-radius:1px;background:#e0d6ca}#steps b.ln.done{background:#6c9c46}
 /* title */
 #title h1{position:absolute;left:70px;top:150px;font-family:'Do Hyeon';font-size:68px;color:#fff8ea;line-height:1.15;text-shadow:0 4px 0 #8f2a19,0 8px 24px rgba(0,0,0,.35);pointer-events:none}
 #title h1 small{display:block;font-size:26px;color:#ffe2b8;text-shadow:0 2px 6px rgba(0,0,0,.5);margin-bottom:10px}
@@ -66,10 +69,10 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .selBar .cnt{font-family:'Do Hyeon';font-size:20px;color:#7a3b1f}
 .bottomR{position:absolute;right:30px;bottom:24px}
 /* call window (grandma / player live 3d inset) */
-.callwin{position:absolute;border:5px solid #fff;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.3);pointer-events:none!important;display:none}
+.callwin{position:absolute;border:3px solid #fff;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.3);pointer-events:none!important;display:none}
 .callwin.on{display:block}
 .callwin .nm{position:absolute;left:8px;bottom:8px;background:rgba(40,120,70,.92);color:#fff;font-family:'Do Hyeon';font-size:14px;padding:2px 10px;border-radius:10px}
-.callwin .nm:before{content:'● ';color:#ff6b5b}
+.callwin .nm{display:flex;align-items:center;gap:4px}.callwin .nm svg{width:12px;height:12px}
 .coachB{position:absolute;left:262px;bottom:96px;max-width:400px;pointer-events:none!important}
 .coachB:after{left:-20px;bottom:18px;border-right-color:#fff}
 /* 1st-person HUD */
@@ -94,11 +97,11 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 /* store */
 #store h2{position:absolute;left:36px;bottom:34px;font-family:'Do Hyeon';font-size:30px;color:#fff;text-shadow:0 3px 0 #8f2a19,0 4px 14px rgba(0,0,0,.4);pointer-events:none}
 /* eval */
-#gBubble{left:40px;top:80px;width:400px;min-height:110px;font-size:21px}
-#gBubble:after{right:-22px;left:auto;top:40px;border-left-color:#fff}
+#gBubble{left:180px;top:84px;width:300px;font-size:16px;padding:12px 16px;line-height:1.45}
+#gBubble:after{right:-22px;left:auto;top:26px;border-left-color:#fff}
 #gBubble .line{margin:4px 0;opacity:0;transform:translateY(6px);transition:all .35s}
 #gBubble .line.show{opacity:1;transform:none}
-#resCard{right:26px;top:66px;width:390px;opacity:0;transform:translateX(40px);transition:all .5s}
+#resCard{right:26px;top:70px;width:400px;background:rgba(247,236,220,.9);padding:10px;opacity:0;transform:translateX(40px);transition:all .5s}
 #resCard.show{opacity:1;transform:none}
 #resCard .kname{font-family:'Do Hyeon';font-size:28px;color:#7a2a14;margin:4px 0 4px;line-height:1.2;text-align:center}
 #resCard .new{display:inline-block;background:#ffcf3f;color:#6a3a00;font-family:'Do Hyeon';padding:3px 12px;border-radius:12px;font-size:15px;animation:pop .6s}
@@ -134,6 +137,28 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 #resCard .sc span{font-family:'Do Hyeon';color:#5a3a22}
 #resCard .sc b{font-weight:normal;color:#d9482f}
 #resCard .sc i{font-style:normal;color:#8a7260;width:100%;font-size:11px;margin-top:-2px}
+#resCard .rc{background:#fffaf2;border-radius:14px;padding:6px 12px;margin-bottom:6px}
+#resCard .rc:last-child{margin-bottom:0}
+#resCard .rc.top{text-align:center;padding:8px 12px 10px}
+#resCard .rc h4{margin:0 0 2px;font-size:15px}
+#resCard .kname{font-size:22px!important;margin:2px 0!important}
+#resCard .big{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:2px}
+#resCard .big .thumbs{font-size:24px}
+#resCard .big .pt{font-family:'Do Hyeon';font-size:34px;color:#d9482f;line-height:1}#resCard .big .pt small{font-size:16px;color:#7a3b1f;margin-left:2px}
+#resCard .bars2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+#resCard .bars2 .bar{margin:1px 0}#resCard .bars2 .bar label{width:44px;font-size:13px}
+#resCard .items #resScore{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+#resCard .items .row{display:flex;align-items:center;gap:6px;font-size:13px;margin:2px 0}
+#resCard .items .row span{width:54px;font-family:'Do Hyeon';color:#5a3a22}
+#resCard .items .row .t{flex:1;height:8px;background:#efe3d3;border-radius:6px;overflow:hidden}
+#resCard .items .row .t div{height:100%;background:#7aa35a;border-radius:6px}
+#resCard .items .row b{width:38px;text-align:right;font-weight:normal;font-family:'Do Hyeon';color:#7a3b1f}
+#resCard .rc.warn{background:#fbe3dc}#resCard .rc.warn h4{color:#a2321d}
+#resCard .rc.warn ul{margin:0;padding:0;list-style:none}
+#resCard .rc.warn li{font-size:12px;color:#8a2b1c;line-height:1.4}
+#resCard .rc.warn li b{font-weight:normal;font-family:'Do Hyeon'}
+#resCard .rc.ok{background:#e8f1de}#resCard .rc.ok h4{color:#4f7a33;margin:0}
+#resCard .chips span{display:inline-block;font-size:13px;background:#f3e6d4;color:#6a4a32;border-radius:12px;padding:2px 9px;margin:2px 3px 0 0}
 #resCard .nick{display:flex;gap:6px;margin-top:8px}
 #resCard .nick input{flex:1;min-width:0;font-family:inherit;font-size:15px;padding:6px 10px;border:2px solid #f0dfc8;border-radius:12px;background:#fff}
 #resCard .nick .btn{font-size:15px;padding:6px 12px;box-shadow:0 3px 0 #8f2a19}
@@ -214,13 +239,12 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
   <div class="screen" id="eval">
     <div class="bubble" id="gBubble"></div>
     <div class="panel" id="resCard">
-      <div style="text-align:center" id="resNew"></div>
-      <div class="kname" id="resName"></div>
-      <div class="thumbs" id="resThumbs"></div>
-      <h4>👅 할머니의 맛 분석</h4>
-      <div class="bars" id="resBars"></div>
-      <div class="score" id="resScore"></div>
-      <div class="detail" id="resDetail"></div>
+      <div class="rc top"><div id="resNew"></div><div class="kname" id="resName"></div>
+        <div class="big"><div class="thumbs" id="resThumbs"></div><div class="pt" id="resTotal"></div></div></div>
+      <div class="rc"><h4>맛 분석</h4><div class="bars bars2" id="resBars"></div></div>
+      <div class="rc items"><h4>평가 항목</h4><div id="resScore"></div></div>
+      <div class="rc" id="resWarn"></div>
+      <div class="rc"><h4>사용 재료</h4><div class="chips" id="resDetail"></div></div>
     </div>
     <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>

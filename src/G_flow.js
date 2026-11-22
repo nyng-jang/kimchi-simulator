@@ -6,11 +6,12 @@ let K3=null, MK=null;
 const STEPNAMES=[['select','재료 고르기'],['cut','손질하기'],['season','양념 만들기'],['mix','버무리기'],['store','보관하기'],['eval','할머니 평가']];
 const camG=new THREE.PerspectiveCamera(32,1,0.1,30), camP=new THREE.PerspectiveCamera(32,1,0.1,30);
 function setInset(which,x,y,w,h){if(!which){INSET=null;$('callwin').classList.remove('on');return;}
-  INSET={which,x,y,w,h};const e=$('callwin');e.style.left=x+'px';e.style.top=y+'px';e.style.width=w+'px';e.style.height=h+'px';e.classList.add('on');$('callName').textContent=which==='g'?'할머니':'나';}
+  INSET={which,x,y,w,h};const e=$('callwin');e.style.left=x+'px';e.style.top=y+'px';e.style.width=w+'px';e.style.height=h+'px';e.classList.add('on');$('callName').innerHTML=MIC+(which==='g'?'할머니':'나');}
+const MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 function setCam(p,l,fov){camera.fov=fov||40;camera.updateProjectionMatrix();camera.position.set(...p);camera.lookAt(...l);camera.userData.base={p,l};}
 function go(id){document.querySelectorAll('.screen').forEach(s=>{if(s.id!=='dex')s.classList.remove('on');});$(id).classList.add('on');
   const idx=STEPNAMES.findIndex(s=>s[0]===id);const sb=$('steps');
-  if(idx>=0){sb.classList.add('on');sb.innerHTML=STEPNAMES.map((s,i)=>`<span class="${i<idx?'done':i===idx?'cur':''}">${i+1}. ${s[1]}</span>`).join('');}else sb.classList.remove('on');
+  if(idx>=0){sb.classList.add('on');sb.innerHTML=STEPNAMES.map((s,i)=>(i?`<b class="ln${i<=idx?' done':''}"></b>`:'')+`<span class="${i<idx?'done':i===idx?'cur':''}"><i>${i<idx?'✓':i+1}</i>${s[1]}</span>`).join('');}else sb.classList.remove('on');
   handlers={};canvas.style.cursor='default';setInset(null);PLAYER.root.visible=true;PLAYER.root.position.set(0,0,0.05);PLAYER.root.rotation.y=0;if(K3)K3.decor.forEach(o=>o.visible=true);
   if(['cut','season','mix'].includes(id)){setInset('g',22,462,224,236);camera.fov=48;camera.updateProjectionMatrix();GRANDMA.setPose('idle');GRANDMA.setExpr('smile');}
   ({title:enterTitle,intro:enterIntro,select:enterSelect,cut:enterCut,season:enterSeason,mix:enterMix,store:enterStore,eval:enterEval}[id]||(()=>{}))();}
@@ -190,7 +191,7 @@ function scoreKimchi(c){const st=c.stat,sv=k=>sp(c,k),spoons=Object.values(c.sea
   const sea=(sv('garlic')>=1?5:0)+(sv('shrimp')+sv('fishsauce')>=1?5:0)+(sv('ginger')+sv('rice')>=1?3:0)+(spoons>=4&&spoons<=14?2:0);
   P.push(['양념',sea,15,sea>=13?'양념이 알차요':sv('garlic')<1?'마늘이 빠졌어요':sv('shrimp')+sv('fishsauce')<1?'젓갈이 빠졌어요':'양념이 조금 아쉬워요']);
   // 6) 엉뚱함 감점: 엉뚱한 재료·양념 하나당 -12 (할머니 기준에서 김치가 아님)
-  const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 감점',-pen,0,`엉뚱한 재료·양념 ${weirdI+weirdS}개`]);
+  const pen=12*(weirdI+weirdS);if(pen)P.push(['엉뚱함 −'+pen,-pen,0,`엉뚱한 재료·양념 ${weirdI+weirdS}개`]);
   const total=Math.max(0,P.reduce((x,p)=>x+p[1],0));const thumbs=total>=85?5:total>=70?4:total>=55?3:total>=35?2:1;
   return {total,thumbs,parts:P};}
 let EV=null,EVINFO=null;
@@ -204,7 +205,7 @@ function enterEval(){
   MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=m.clone();n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
   shadowAll(MK.plateGrp);S.photo=platePhoto();
   // player in the video call
-  setInset('p',24,456,250,240);PLAYER.root.rotation.y=0;PLAYER.setPose('phone');PLAYER.setExpr('worry');
+  setInset('p',24,512,196,188);PLAYER.root.rotation.y=0;PLAYER.setPose('phone');PLAYER.setExpr('worry');
   GRANDMA.setPose('look');GRANDMA.setExpr('smile');GRANDMA.look=0;
   const c=ctx();const recipe=RECIPES.find(r=>{try{return r.test(c);}catch(e){return false;}});
   const name=recipe?recipe.n:genName(c);const isNew=recipe&&!DEX.found[recipe.k];
@@ -220,10 +221,15 @@ function enterEval(){
   $('gBubble').innerHTML='<b class="jua" style="color:#3f6b4a">할머니</b><div class="line show">어디 보자~ 우리 강아지가 뭘 만들었나~</div>';
   $('resCard').classList.remove('show');$('evalBtns').classList.remove('show');
   $('resName').textContent=name;$('resNew').innerHTML=isNew?'<span class="new">✨ 새로운 김치 발견!</span>':recipe?'<span class="new" style="background:#e7dccd;color:#7a5a3a">도감에 있는 김치</span>':'';
-  $('resThumbs').innerHTML='할머니 엄지 '+[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');
+  $('resThumbs').innerHTML=[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');
+  $('resTotal').innerHTML=`${SC.total}<small>점</small>`;
   $('resBars').innerHTML=STATS.map(([k,n,col])=>`<div class="bar"><label>${n}</label><div class="t"><div data-w="${Math.min(100,c.stat[k]/10*100)}" style="background:${col}"></div></div><span class="v">${Math.round(c.stat[k]*10)/10}</span></div>`).join('');
-  $('resScore').innerHTML=`<div class="tot">할머니 점수 <b>${SC.total}</b>점</div>`+SC.parts.map(([n,p,m,why])=>`<div class="sc"><span>${n}</span><b>${m?p+'/'+m:p}</b><i>${why}</i></div>`).join('');
-  $('resDetail').textContent=`${c.sel.map(k=>ING[k].n).join(', ')} · 양념 ${Object.values(c.season).reduce((a,b)=>a+b,0)}숟갈 · ${STORE[c.store].n}`;
+  const main=SC.parts.filter(p=>p[2]>0),bad=SC.parts.filter(p=>p[2]===0||p[1]<p[2]*0.8);
+  $('resScore').innerHTML=main.map(([n,p,m])=>`<div class="row"><span>${n}</span><div class="t"><div style="width:${Math.round(p/m*100)}%"></div></div><b>${p}/${m}</b></div>`).join('');
+  const w=$('resWarn');w.className='rc '+(bad.length?'warn':'ok');
+  w.innerHTML=bad.length?'<h4>⚠ 감점 사유</h4><ul>'+bad.map(([n,p,m,why])=>`<li><b>${m===0?n:n+' −'+(m-p)}</b> · ${why}</li>`).join('')+'</ul>':'<h4>✓ 감점 없이 깔끔해요</h4>';
+  const spoons=Object.values(c.season).reduce((a,b)=>a+b,0);
+  $('resDetail').innerHTML=c.sel.map(k=>`<span>${ING[k].n}</span>`).join('')+(spoons?`<span>양념 ${spoons}숟갈</span>`:'')+`<span>${STORE[c.store].n}</span>`;
   GRANDMA.say(1.6);
   EV={t:0,steps:[
     [1.8,()=>{GRANDMA.setPose('taste');GRANDMA.setExpr('yum');PLAYER.flash('worry',2);}],
