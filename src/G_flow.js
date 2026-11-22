@@ -16,8 +16,13 @@ function go(id){document.querySelectorAll('.screen').forEach(s=>{if(s.id!=='dex'
   ({title:enterTitle,intro:enterIntro,select:enterSelect,cut:enterCut,season:enterSeason,mix:enterMix,store:enterStore,eval:enterEval}[id]||(()=>{}))();}
 function headPos(C,up){const v=new THREE.Vector3();C.j.head.getWorldPosition(v);v.y+=up||0.42;return toScreen(v);}
 function placeBubble(el,C,up,side){const p=headPos(C,up);const h=el.offsetHeight||50;
-  if(!side&&p.y-h>78){el.className=el.className.replace(/ ?side[LR]/g,'');el.style.left=p.x+'px';el.style.top=p.y+'px';return;}
-  const hp=headPos(C,0.12),sd=side||(hp.x>640?'L':'R');el.className=el.className.replace(/ ?side[LR]/g,'')+' side'+sd;
+  if(!side&&p.y-h>78){el.style.whiteSpace='nowrap';el.style.maxWidth='none';el.className=el.className.replace(/ ?side[LR]/g,'');el.style.left=p.x+'px';el.style.top=p.y+'px';return;}
+  const hp=headPos(C,0.12),scr=el.closest('.screen'),pn=scr&&[...scr.querySelectorAll('.panel')].find(x=>x.offsetParent);
+  const lim=pn?pn.offsetLeft-12:1268,roomR=lim-(hp.x+58),roomL=hp.x-58-12;
+  el.style.whiteSpace='nowrap';el.style.maxWidth='none';const w=el.offsetWidth||200;
+  let sd=side||(hp.x>640?'L':'R');if(sd==='R'&&w>roomR&&roomL>roomR)sd='L';else if(sd==='L'&&w>roomL&&roomR>roomL)sd='R';
+  const room=sd==='R'?roomR:roomL;if(w>room){el.style.whiteSpace='normal';el.style.maxWidth=Math.max(160,room)+'px';el.style.width='max-content';}
+  el.className=el.className.replace(/ ?side[LR]/g,'')+' side'+sd;
   el.style.left=(hp.x+(sd==='L'?-58:58))+'px';el.style.top=hp.y+'px';}
 
 /* ---------- TITLE ---------- */
@@ -252,7 +257,7 @@ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
     else{const hp=new THREE.Vector3();PLAYER.j.head.getWorldPosition(hp);cam.position.set(hp.x-0.1,hp.y+0.02,hp.z+1.05);cam.lookAt(hp.x,hp.y-0.05,hp.z);}
     cam.aspect=w/h;cam.updateProjectionMatrix();
     // hide the eval plate camera conflict: plate stays, fine
-    R.shadowMap.autoUpdate=(INSET_TICK++%15===0);R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.shadowMap.autoUpdate=true;R.setViewport(0,0,1280,720);}
+    R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.setViewport(0,0,1280,720);}
   requestAnimationFrame(loop);}
 window.addEventListener('load',()=>{loadAssets().then(info=>{console.log('assets:',info);ASSET_INFO=info;}).catch(e=>console.warn(e)).finally(()=>{
   try{makeThumbs();K3=buildK3();MK=buildMarket();}catch(e){console.error(e);}

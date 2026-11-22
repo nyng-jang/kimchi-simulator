@@ -47,8 +47,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .headBubble.sideL{transform:translate(-100%,-50%)}.headBubble.sideR{transform:translate(0,-50%)}
 .headBubble.sideL:after{left:auto;right:-20px;bottom:auto;top:50%;margin:-12px 0 0;border-color:transparent;border-left-color:#fff}
 .headBubble.sideR:after{left:-20px;bottom:auto;top:50%;margin:-12px 0 0;border-color:transparent;border-right-color:#fff}
-#seasonTip{top:auto;bottom:100px;left:auto;right:30px;transform:none;transition:opacity .4s}
-#seasonTip.hide{opacity:0}
+#seasonTip{top:80px}
 .panel{position:absolute;background:rgba(255,250,242,.95);border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:16px 18px}
 /* select */
 #ingPanel{right:20px;top:66px;width:560px;height:574px;overflow:hidden}
@@ -778,16 +777,13 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
     const cc=typeof capColor==='function'?null:hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
       const e1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],e2=[c2[0]-a[0],c2[1]-a[1],c2[2]-a[2]];const nA=A===0?e1[1]*e2[2]-e1[2]*e2[1]:e1[0]*e2[1]-e1[1]*e2[0];
       if(Math.sign(nA)!==want)[b,c2]=[c2,b]; // 단면이 잘린 쪽 바깥을 보도록 방향 맞춤
-      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.042,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
+      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
       else for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
 function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
   const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;const capC=pat||ing.inner;
+  let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
   const X=t=>b.min.x+(b.max.x-b.min.x)*t, Z=t=>b.min.z+(b.max.z-b.min.z)*t;
-  // 영역 밖 삼각형은 미리 버림 (자르기 연산량 감소)
-  const P0=M.geo.attributes.position.array,C0=M.geo.attributes.color.array,xa=X(x0)-1e-4,xb=X(x1)+1e-4,za=Z(z0)-1e-4,zb=Z(z1)+1e-4;let pos=[],col=[];
-  for(let i=0;i<P0.length;i+=9){const mnx=Math.min(P0[i],P0[i+3],P0[i+6]),mxx=Math.max(P0[i],P0[i+3],P0[i+6]),mnz=Math.min(P0[i+2],P0[i+5],P0[i+8]),mxz=Math.max(P0[i+2],P0[i+5],P0[i+8]);
-    if(mxx<xa||mnx>xb||mxz<za||mnz>zb)continue;for(let j=0;j<9;j++){pos.push(P0[i+j]);col.push(C0[i+j]);}}
   if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,capC);
   if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,capC);
   if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,capC);
@@ -797,10 +793,7 @@ function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-
   g.translate(-cx,-cy,-cz);g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:6,specular:0x111111,side:THREE.DoubleSide}));
   m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array)};return m;}
-const PIECE_CACHE=new Map();
-function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=[ing.k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(4):v).join('|');let src=PIECE_CACHE.get(key);
-      if(!src){src=slicePiece(ing,x0,x1,z0,z1);PIECE_CACHE.set(key,src);if(PIECE_CACHE.size>400)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
-      const g=src.geometry.clone();const m=new THREE.Mesh(g,src.material);m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0};return m;}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{return slicePiece(ing,x0,x1,z0,z1);}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
 function modelZRange(ing){const M=MODELS[ing.k];if(M)return [M.box.min.z,M.box.max.z];const zs=ing.sec.map(p=>p[0]);return [Math.min(...zs),Math.max(...zs)];}
 function modelTop(ing){const M=MODELS[ing.k];if(M)return M.box.max.y;return Math.max(...ing.sec.map(p=>p[1]));}
 function container(s){const src=SEAMODELS[s.k];if(!src)return containerProc(s);
@@ -848,10 +841,8 @@ function loadIng(){
   coach('cutCoach',{cabbage:'배추는 포기로 길게 갈라야 양념이 잘 배지~',radish:'무는 깍둑썰면 깍두기, 채썰면 무생채여!',watermelon:'수박을…? 그래 일단 썰어 봐라 허허',dujjon:'그 과자도 써냐? 할미는 모르겄다~',leek:'파는 송송 채썰어도 좋고 큼직해도 좋고~'}[ing.k]||`${ing.n}은(는) 니 맘대로 썰어 봐라~`);}
 function coach(id,t){$(id).textContent=t;GRANDMA.say(Math.min(2.4,0.6+t.length*0.05));}
 function rebuildPieces(){
-  const keep=new Map();(CUT.meshes||[]).forEach(m=>{const r=m.userData.reg;keep.set([r.x0,r.x1,r.z0,r.z1].join('|'),m);});
-  CUT.meshes=CUT.pieces.map(p=>{const k=[p.x0,p.x1,p.z0,p.z1].join('|');const old=keep.get(k);if(old){keep.delete(k);old.userData.reg=p;return old;}  // 안 잘린 조각은 그대로 재사용
-    const m=buildPiece(CUT.ing,p.x0,p.x1,p.z0,p.z1);m.userData.reg=p;m.position.set(m.userData.cx,m.userData.cy,m.userData.cz);m.userData.tgt=m.position.clone();CUT.group.add(m);return m;});
-  keep.forEach(m=>{CUT.group.remove(m);m.geometry.dispose();});
+  if(CUT.meshes)CUT.meshes.forEach(m=>CUT.group.remove(m));
+  CUT.meshes=CUT.pieces.map(p=>{const m=buildPiece(CUT.ing,p.x0,p.x1,p.z0,p.z1);m.userData.reg=p;m.position.set(m.userData.cx,m.userData.cy,m.userData.cz);m.userData.tgt=m.position.clone();CUT.group.add(m);return m;});
   layoutPieces(true);}
 function layoutPieces(instant){const gap=0.13;const doneX=CUT.done.filter(c=>c.ax==='x').map(c=>c.p),doneZ=CUT.done.filter(c=>c.ax==='z').map(c=>c.p);
   CUT.meshes.forEach(m=>{const r=m.userData.reg,xc=(r.x0+r.x1)/2,zc=(r.z0+r.z1)/2;
@@ -916,8 +907,8 @@ function cutFrame(dt){
 /* ---------- SEASON ---------- */
 const SEASON={};
 function enterSeason(){
-  $('seasonTip').classList.remove('hide');scene=new THREE.Scene();lights(scene);kitchen(scene);
-  camera.position.set(0,3.6,3.2);camera.lookAt(0,0,-0.6);
+  scene=new THREE.Scene();lights(scene);kitchen(scene);
+  camera.position.set(0,3.6,3.2);camera.lookAt(0,0,-1.0);
   const bowl=basin(1.05,0.6,'#c3c8cd');bowl.position.set(0,0,0.45);scene.add(bowl);SEASON.bowl=bowl;
   SEASON.items=SEAS.map((s,i)=>{const g=container(s);const row=i<6?0:1,col=i%6;g.position.set(-2.75+col*1.1+(row?0.55:0),0,row?-2.25:-1.25);g.userData.s=s;scene.add(g);return g;});
   SEASON.blobs=[];SEASON.paste=null;SEASON.mixed=false;SEASON.spoons=[];
@@ -929,7 +920,7 @@ function enterSeason(){
   handlers={down:seasonClick,move:seasonHover,up:null,key:null};frameFn=seasonFrame;}
 function seasonPick(){let best=null;SEASON.items.forEach(g=>{const h=ray.intersectObject(g,true);if(h.length&&(!best||h[0].distance<best.d))best={g,d:h[0].distance};});return best&&best.g;}
 function seasonHover(){const g=seasonPick();canvas.style.cursor=g?'pointer':'default';SEASON.hover=g;}
-function seasonClick(){const g=seasonPick();if(!g)return;$('seasonTip').classList.add('hide');const s=g.userData.s;if((S.season[s.k]||0)>=9){toast(`${s.n}은(는) 9숟갈까지만!`);return;}
+function seasonClick(){const g=seasonPick();if(!g)return;const s=g.userData.s;if((S.season[s.k]||0)>=9){toast(`${s.n}은(는) 9숟갈까지만!`);return;}
   if(SEASON.mixed){unmix();}
   S.season[s.k]=(S.season[s.k]||0)+1;SEASON.spoons.push({s,from:g.position.clone().add(new THREE.Vector3(0,0.7,0)),t:0});updSeasonUI();
   const lines={gochu:'고춧가루는 2~4숟갈이면 딱 좋아~',shrimp:'새우젓! 그렇지 그거여~',fishsauce:'액젓 들어가면 감칠맛이 확 살지',salt:'소금은 조금씩! 짜면 못 먹어~',mayo:'마요네즈를…? 허허 해 봐라',choco:'초코를 왜 넣냐 얘야~',cola:'콜라? 김치가 톡 쏘겄다!',sugar:'설탕 조금은 괜찮어',maesil:'매실청 넣으면 단맛이 은은하지',rice:'찹쌀풀 넣어야 양념이 착 붙어!'};
@@ -1015,8 +1006,13 @@ function go(id){document.querySelectorAll('.screen').forEach(s=>{if(s.id!=='dex'
   ({title:enterTitle,intro:enterIntro,select:enterSelect,cut:enterCut,season:enterSeason,mix:enterMix,store:enterStore,eval:enterEval}[id]||(()=>{}))();}
 function headPos(C,up){const v=new THREE.Vector3();C.j.head.getWorldPosition(v);v.y+=up||0.42;return toScreen(v);}
 function placeBubble(el,C,up,side){const p=headPos(C,up);const h=el.offsetHeight||50;
-  if(!side&&p.y-h>78){el.className=el.className.replace(/ ?side[LR]/g,'');el.style.left=p.x+'px';el.style.top=p.y+'px';return;}
-  const hp=headPos(C,0.12),sd=side||(hp.x>640?'L':'R');el.className=el.className.replace(/ ?side[LR]/g,'')+' side'+sd;
+  if(!side&&p.y-h>78){el.style.whiteSpace='nowrap';el.style.maxWidth='none';el.className=el.className.replace(/ ?side[LR]/g,'');el.style.left=p.x+'px';el.style.top=p.y+'px';return;}
+  const hp=headPos(C,0.12),scr=el.closest('.screen'),pn=scr&&[...scr.querySelectorAll('.panel')].find(x=>x.offsetParent);
+  const lim=pn?pn.offsetLeft-12:1268,roomR=lim-(hp.x+58),roomL=hp.x-58-12;
+  el.style.whiteSpace='nowrap';el.style.maxWidth='none';const w=el.offsetWidth||200;
+  let sd=side||(hp.x>640?'L':'R');if(sd==='R'&&w>roomR&&roomL>roomR)sd='L';else if(sd==='L'&&w>roomL&&roomR>roomL)sd='R';
+  const room=sd==='R'?roomR:roomL;if(w>room){el.style.whiteSpace='normal';el.style.maxWidth=Math.max(160,room)+'px';el.style.width='max-content';}
+  el.className=el.className.replace(/ ?side[LR]/g,'')+' side'+sd;
   el.style.left=(hp.x+(sd==='L'?-58:58))+'px';el.style.top=hp.y+'px';}
 
 /* ---------- TITLE ---------- */
@@ -1251,7 +1247,7 @@ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
     else{const hp=new THREE.Vector3();PLAYER.j.head.getWorldPosition(hp);cam.position.set(hp.x-0.1,hp.y+0.02,hp.z+1.05);cam.lookAt(hp.x,hp.y-0.05,hp.z);}
     cam.aspect=w/h;cam.updateProjectionMatrix();
     // hide the eval plate camera conflict: plate stays, fine
-    R.shadowMap.autoUpdate=(INSET_TICK++%15===0);R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.shadowMap.autoUpdate=true;R.setViewport(0,0,1280,720);}
+    R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.setViewport(0,0,1280,720);}
   requestAnimationFrame(loop);}
 window.addEventListener('load',()=>{loadAssets().then(info=>{console.log('assets:',info);ASSET_INFO=info;}).catch(e=>console.warn(e)).finally(()=>{
   try{makeThumbs();K3=buildK3();MK=buildMarket();}catch(e){console.error(e);}
