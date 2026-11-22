@@ -173,12 +173,12 @@ function mixMove(){const hit=planeHit(0.35);if(!hit)return;MIX.cursor=hit;
       if(Math.random()<len*1.5)SFX.squish();}}MIX.last=hit.clone();}}
 function mixFrame(dt){
   const g=MIX.glove;if(MIX.cursor){const ty=pointerDown?0.55:1.0;g.position.x+=(MIX.cursor.x-g.position.x)*Math.min(1,dt*16);g.position.z+=(MIX.cursor.z+0.15-g.position.z)*Math.min(1,dt*16);g.position.y+=(ty-g.position.y)*Math.min(1,dt*12);g.rotation.y=Math.sin(performance.now()/300)*0.15;}
-  const coat=MIX.sauce?MIX.progress:0;
+  const coat=MIX.sauce?MIX.progress:0;MIX.recolor=6; // 한 프레임에 조각 6개까지만 색 갱신
   MIX.items.forEach(m=>{const u=m.userData;m.position.addScaledVector(u.v,dt);u.v.multiplyScalar(Math.pow(0.04,dt));u.v.y-=dt*4;
     if(m.position.y<0.22){m.position.y=0.22;u.v.y=Math.abs(u.v.y)*0.2;}
     const r=Math.hypot(m.position.x,m.position.z),lim=1.45+ (m.position.y-0.2)*0.4;if(r>lim){m.position.x*=lim/r;m.position.z*=lim/r;u.v.x*=-0.3;u.v.z*=-0.3;}
     m.rotation.x+=u.spin.x*dt;m.rotation.y+=u.spin.y*dt;m.rotation.z+=u.spin.z*dt;u.spin.multiplyScalar(Math.pow(0.05,dt));
-    if(MIX.sauce&&Math.abs((u.coat||0)-coat)>0.01){u.coat=coat;const col=m.geometry.attributes.color,c0=u.col0,k=coat*0.68,s=MIX.sauce;for(let i=0;i<col.count;i++){col.array[i*3]=c0[i*3]+(s.r-c0[i*3])*k;col.array[i*3+1]=c0[i*3+1]+(s.g-c0[i*3+1])*k;col.array[i*3+2]=c0[i*3+2]+(s.b-c0[i*3+2])*k;}col.needsUpdate=true;}});
+    if(MIX.sauce&&(Math.abs((u.coat||0)-coat)>0.04||(coat>=1&&u.coat<1))&&MIX.recolor-->0){u.coat=coat;const col=m.geometry.attributes.color,c0=u.col0,k=coat*0.68,s=MIX.sauce;for(let i=0;i<col.count;i++){col.array[i*3]=c0[i*3]+(s.r-c0[i*3])*k;col.array[i*3+1]=c0[i*3+1]+(s.g-c0[i*3+1])*k;col.array[i*3+2]=c0[i*3+2]+(s.b-c0[i*3+2])*k;}col.needsUpdate=true;}});
   if(MIX.sauceMesh){const s=Math.max(0.02,1-MIX.progress*1.1);MIX.sauceMesh.scale.set(s,1,s);MIX.sauceMesh.visible=s>0.03;}
   $('mixBar').style.width=(MIX.progress*100).toFixed(0)+'%';
   if(MIX.progress>=1&&!MIX.done){MIX.done=true;SFX.ding();toast('다 버무렸다! 🎉');$('btnToStore').disabled=false;coach('mixCoach','아이고 잘 버무렸다! 빛깔 좋네~');}}

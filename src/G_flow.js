@@ -257,7 +257,7 @@ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
     else{const hp=new THREE.Vector3();PLAYER.j.head.getWorldPosition(hp);cam.position.set(hp.x-0.1,hp.y+0.02,hp.z+1.05);cam.lookAt(hp.x,hp.y-0.05,hp.z);}
     cam.aspect=w/h;cam.updateProjectionMatrix();
     // hide the eval plate camera conflict: plate stays, fine
-    R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.setViewport(0,0,1280,720);}
+    R.shadowMap.autoUpdate=(INSET_TICK++%15===0);R.setScissorTest(true);R.setViewport(x,720-y-h,w,h);R.setScissor(x,720-y-h,w,h);R.render(sc,cam);R.setScissorTest(false);R.shadowMap.autoUpdate=true;R.setViewport(0,0,1280,720);}
   requestAnimationFrame(loop);}
 window.addEventListener('load',()=>{loadAssets().then(info=>{console.log('assets:',info);ASSET_INFO=info;}).catch(e=>console.warn(e)).finally(()=>{
   try{makeThumbs();K3=buildK3();MK=buildMarket();}catch(e){console.error(e);}

@@ -46,7 +46,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
    ========================================================= */
 const canvas=$('gl');
 const R=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
-R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setSize(1280,720,false);
+R.setPixelRatio(Math.min(devicePixelRatio||1,1.5));R.setSize(1280,720,false);
 R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
 const camera=new THREE.PerspectiveCamera(48,1280/720,0.1,100);
 let scene=null, frameFn=null, INSET=null;

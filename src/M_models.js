@@ -89,12 +89,17 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
       if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
       else for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
+function _cull(P,C,o,a,b){a-=1e-3;b+=1e-3;const op=[],oc=[];for(let i=0;i<P.length;i+=9){const u=P[i+o],v=P[i+3+o],w=P[i+6+o];
+  if((u<a&&v<a&&w<a)||(u>b&&v>b&&w>b))continue;for(let j=0;j<9;j++){op.push(P[i+j]);oc.push(C[i+j]);}}return [op,oc];}
 function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
   const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;const capC=pat||ing.inner;
   let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
   const X=t=>b.min.x+(b.max.x-b.min.x)*t, Z=t=>b.min.z+(b.max.z-b.min.z)*t;
+  // 자르기 전에 이번 축 범위 밖 삼각형만 버림 (x로 다 자른 뒤에 z를 거름 → 단면 모양은 그대로)
+  [pos,col]=_cull(pos,col,0,X(x0),X(x1));
   if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,capC);
   if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,capC);
+  [pos,col]=_cull(pos,col,2,Z(z0),Z(z1));
   if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,capC);
   if(z1<0.9999)[pos,col]=clipHalf(pos,col,'z',Z(z1)-eps,false,capC);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
@@ -102,7 +107,10 @@ function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-
   g.translate(-cx,-cy,-cz);g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:6,specular:0x111111,side:THREE.DoubleSide}));
   m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array)};return m;}
-function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{return slicePiece(ing,x0,x1,z0,z1);}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+const PIECE_CACHE=new Map();
+function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=[ing.k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(5):v).join('|');let src=PIECE_CACHE.get(key);
+      if(!src){src=slicePiece(ing,x0,x1,z0,z1);PIECE_CACHE.set(key,src);if(PIECE_CACHE.size>300)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
+      const m=new THREE.Mesh(src.geometry.clone(),src.material.clone());m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0};return m;}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
 function modelZRange(ing){const M=MODELS[ing.k];if(M)return [M.box.min.z,M.box.max.z];const zs=ing.sec.map(p=>p[0]);return [Math.min(...zs),Math.max(...zs)];}
 function modelTop(ing){const M=MODELS[ing.k];if(M)return M.box.max.y;return Math.max(...ing.sec.map(p=>p[1]));}
 function container(s){const src=SEAMODELS[s.k];if(!src)return containerProc(s);
