@@ -64,40 +64,40 @@ const STORE=Object.fromEntries(STORES.map(s=>[s.k,s]));
 // 숨은 레시피 (위에서부터 먼저 맞는 것 하나)
 const has=(c,k)=>c.sel.includes(k), sp=(c,k)=>c.season[k]||0, weirdCnt=c=>c.sel.filter(k=>ING[k].g==='weird').length+SEAS.filter(s=>s.weird&&sp(c,s.k)>0).length;
 const RECIPES=[
- {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'얘야… 양념은 어디 갔니? 그냥 생야채구나 허허'},
- {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치냐 피자냐! 근데 애들은 좋아하겄다~'},
- {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터진다! 이건 화채여 김치여?'},
- {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를… 니 할아버지가 보면 기절하겄다'},
- {k:'cvs',taste:'시원한 민트와 달콤한 초코, 치약 같은 상쾌함.',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'요즘 젊은 애들은 이런 걸 먹냐? 치약 맛이 나는디?'},
- {k:'hawaii',taste:'새콤달콤한 파인애플이 매콤함을 감싸는 열대의 맛.',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'새콤달콤하니… 의외로 고기랑 먹으면 괜찮겠구먼!'},
- {k:'hell',taste:'첫입부터 혀가 얼얼, 눈물 나게 매운 맛.',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 맵다! 물! 물 좀 다오! 혀가 불난다!'},
- {k:'sea',taste:'바닷물을 그대로 마신 듯 짜디짠 맛.',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'켁켁! 이건 소금이지 김치가 아니여!'},
- {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'아이고 고와라~ 시원한 백김치구나. 할미가 좋아하는 거여'},
- {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명이지! 아주 잘 했다!'},
- {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'밥에 쓱쓱 비벼 먹으면 딱이겄다~'},
+ {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'굴 겉절이? 오메, 이건 수육 삶아야 쓰겄다. 제대로네!'},
+ {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치여 피자여! 이탈리아 할매가 들으면 울겄다'},
+ {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터지네? 할미 틀니 날아갈 뻔했다!'},
+ {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를 버무려? 니 할아버지가 보면 뒷목 잡고 쓰러지겄다'},
+ {k:'cvs',taste:'시원한 민트와 달콤한 초코, 치약 같은 상쾌함.',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'김치에 치약을 넣었냐? 양치하고 밥 먹는 기분이다잉'},
+ {k:'hawaii',taste:'새콤달콤한 파인애플이 매콤함을 감싸는 열대의 맛.',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'파인애플을 김치에? 할미랑 장난하냐? …근디 고기랑은 먹겄네'},
+ {k:'hell',taste:'첫입부터 혀가 얼얼, 눈물 나게 매운 맛.',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 할미 죽는다! 119 불러라! 혀가 다 타버렸다!'},
+ {k:'sea',taste:'바닷물을 그대로 마신 듯 짜디짠 맛.',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'이건 김치가 아니라 소금 덩어리여! 바다를 통째로 담갔냐!'},
+ {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'흠, 백김치는 제법이네. 이건 할미가 인정한다잉'},
+ {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명인 거 알긴 아는구나. 잘했다잉'},
+ {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'무생채는 그럭저럭 봐줄 만하네. 밥 한 공기는 먹겄다'},
  {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이에 수육 한 점이면 끝나는 거여!'},
- {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'이건 내년까지 두고 먹어도 되겄다. 진짜 장인이네!'},
- {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'아이고 우리 강아지! 할미 김치랑 똑같다 똑같어!'},
+ {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'묵은지까지 할 줄 알어? 이건 할미도 할 말이 없다잉'},
+ {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'오메! 할미 김치를 몰래 훔쳐 갔냐? 똑같다 똑같어!'},
 ];
 
 // 할머니 반응 (조건 맞는 것 최대 3개)
 // 할머니 반응: [조건, 첫 문장, '~도' 중간 연결, '~도' 마지막 마무리]
 const REACTIONS=[
- [c=>c.stat.salty>=5,'켁켁, 너무 짜! 물 좀 다오!','짜기도 엄청 짜고…','짜기도 엄청 짜구먼! 물 좀 다오~'],
- [c=>c.stat.spicy>=6,'으아, 입에서 불 난다잉!','맵기도 어찌나 맵고…','맵기도 어찌나 매운지 혀가 얼얼하다!'],
- [c=>c.stat.sweet>=5,'이거… 디저트냐? 달달하네~','달기도 달고…','달기도 디저트처럼 달구먼!'],
- [c=>c.stat.weird>=3,'재료가 이상해! 근데 묘하게 손이 가네?','재료도 요상하고…','재료도 요상한디 묘하게 손이 가네?'],
- [c=>c.stat.umami>=3,'오~ 감칠맛은 제대로구나!','감칠맛도 제대로고…','그래도 감칠맛도 제대로네!'],
- [c=>c.stat.cool>=3,'시원~하다! 속이 뻥 뚫리네','시원하기도 하고…','시원하기도 해서 속이 뻥 뚫리네!'],
- [c=>sp(c,'gochu')===0&&Object.values(c.season).some(v=>v),'빨갛지 않은 김치도 있구나!','빛깔도 하얗고…','빛깔도 하얀 게 신기하구먼!'],
- [c=>c.stat.salty<1&&Object.values(c.season).some(v=>v),'싱겁다~ 소금 좀 더 쳐야겄다','간도 좀 싱겁고…','간도 좀 싱거우니 소금 쬐끔 더 쳐라~'],
+ [c=>c.stat.salty>=5,'켁! 소금 한 포대를 다 부었냐? 물부터 가져와!','짜기는 바닷물 저리 가라고…','짜기도 바닷물보다 짜다잉! 신장 다 상하겄네!'],
+ [c=>c.stat.spicy>=6,'아이고 매워! 할미 잡을라고 작정했냐잉!','맵기는 또 오지게 맵고…','맵기도 오지게 매워서 혀가 다 녹는다잉!'],
+ [c=>c.stat.sweet>=5,'이게 김치여 사탕이여? 이빨 다 썩겄다!','달기는 사탕 저리 가라고…','달기도 사탕처럼 달아서 이빨 다 썩겄다!'],
+ [c=>c.stat.weird>=3,'오메, 이걸 김치라고 담갔냐? 할미 눈을 의심했다','재료도 요상망측하고…','재료도 요상망측한디… 근디 왜 자꾸 손이 가냐잉'],
+ [c=>c.stat.umami>=3,'흥, 감칠맛 하나는 봐줄 만하네','감칠맛은 그나마 살았고…','그래도 감칠맛 하나는 살렸네. 봐준다잉'],
+ [c=>c.stat.cool>=3,'시원하긴 하네. 이건 칭찬해 주마','시원하기는 하고…','시원하기도 하니 그건 봐준다잉'],
+ [c=>sp(c,'gochu')===0&&Object.values(c.season).some(v=>v),'고춧가루는 어따 팔아먹었냐? 허여멀건하네','빛깔도 허여멀건하고…','빛깔도 허여멀건한 게 이게 김치 맞냐잉?'],
+ [c=>c.stat.salty<1&&Object.values(c.season).some(v=>v),'맹탕이여 맹탕! 맹물에 배추 담갔냐?','간은 또 맹탕이고…','간도 맹탕이니 소금 쬐끔 더 쳐라잉!'],
 ];
 // 첫 문장은 그대로, 두 번째부터는 '~도'로 이어 붙이고 마지막은 마무리형으로
 function composeReactions(c,recipe){const hits=REACTIONS.filter(r=>{try{return r[0](c);}catch(e){return false;}});
   const lines=[];if(recipe)lines.push(recipe.line);
   const room=3-lines.length, use=hits.slice(0,room);
   use.forEach((r,i)=>{if(!lines.length){lines.push(r[1]);return;}lines.push(i===use.length-1?r[3]:r[2]);});
-  if(!lines.length)lines.push('음… 이게 니가 만든 김치 맛이구나!');
+  if(!lines.length)lines.push('음… 이게 니 김치 맛이구나. 할미는 말을 아끼겄다');
   return lines;}
-const CLOSERS=['그래도 우리 손주가 만든 거라 할미는 맛있다~','다음엔 할미가 비법 하나 더 알려주마.','밥은 잘 챙겨 먹고 다니지? 김치 있으니 든든하겄다.','멀리서 혼자 김장도 하고 다 컸네 다 컸어.'];
+const CLOSERS=['그래도 굶진 않겄다. 다 먹어라잉, 남기면 혼난다','다음엔 할미 하는 거 똑바로 보고 따라 해라잉','혼자 김장한다고 고생은 했다. 맛 얘기는… 다음에 하자','멀리서 이거 담근다고 애썼다. 근디 연습은 더 해라잉'];
 
