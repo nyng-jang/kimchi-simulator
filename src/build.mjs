@@ -8,8 +8,8 @@ const head=parts[0], js=parts.slice(1).join('\n');
 fs.writeFileSync(path.join(dir,'source.html'),head+'\n'+js+'\n</script>\n</body>\n</html>\n');
 const prod=js.replace(/\nwindow\.__K=\{[\s\S]*?\};\s*$/m,'\n');           // 테스트용 전역 훅 제거
 const JO=require(process.env.OBF_PATH||'javascript-obfuscator');
-const out=JO.obfuscate(prod,{compact:true,identifierNamesGenerator:'hexadecimal',stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,
-  stringArrayRotate:true,stringArrayShuffle:true,splitStrings:true,splitStringsChunkLength:8,controlFlowFlattening:false,deadCodeInjection:false,
+const out=JO.obfuscate(prod,{compact:true,identifierNamesGenerator:'hexadecimal',// 문자열 배열 암호화는 속성 접근마다 해독 함수를 거쳐 칼질 계산을 크게 느리게 해서 끔 (이름 바꾸기·압축만 유지)
+  stringArray:false,splitStrings:false,controlFlowFlattening:false,deadCodeInjection:false,
   selfDefending:false,renameGlobals:true,transformObjectKeys:false,unicodeEscapeSequence:false,target:'browser'}).getObfuscatedCode();
 const html=head.replace(/<!--[\s\S]*?-->/g,'')+'\n'+out+'\n</script>\n</body>\n</html>\n';
 fs.writeFileSync(path.join(dir,'..','index.html'),html);

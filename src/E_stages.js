@@ -31,7 +31,7 @@ function enterCut(){
 function loadIng(){
   if(CUT.group)scene.remove(CUT.group);
   const k=CUT.queue[CUT.qi];const ing=ING[k];
-  CUT.ing=ing;CUT.method=null;CUT.chops=[];CUT.done=[];CUT.busy=false;CUT.finished=false;
+  CUT.ing=ing;CUT.method=null;CUT.chops=[];CUT.done=[];CUT.pend=[];CUT.busy=false;CUT.finished=false;
   CUT.group=new THREE.Group();CUT.group.position.set(BOARD_X,0.14,0);scene.add(CUT.group);
   CUT.pieces=[{x0:0,x1:1,z0:0,z1:1}];rebuildPieces();
   CUT.guides=new THREE.Group();CUT.group.add(CUT.guides);
@@ -52,7 +52,7 @@ function renderMethods(){const started=CUT.done.length>0;
   $('methods').innerHTML=METHODS.map(m=>`<button data-k="${m.k}" class="${CUT.method===m.k?'on':''}" ${started||CUT.finished?'disabled':''}>${m.n}<small>${m.d}</small></button>`).join('');
   document.querySelectorAll('#methods button').forEach(b=>b.onclick=()=>pickMethod(b.dataset.k));}
 function pickMethod(k){SFX.click();CUT.method=k;const m=METHOD[k];
-  CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();
+  CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();prefetchCuts();
   if(!CUT.chops.length){$('cutTip').textContent='통째로 넣기! 그대로 그릇에 담아요';setTimeout(finishIng,500);CUT.finished=true;renderMethods();}
   else $('cutTip').textContent=(TAP?'점선을 톡 터치하면 썰어요!':'칼을 점선에 맞추고 클릭! (스페이스바도 OK)')+` · 남은 칼질 ${CUT.chops.length}번`;}
 function secW(ing){return modelZRange(ing);}
@@ -73,9 +73,42 @@ function cutMove(){if(!CUT.method||CUT.finished)return;const hit=planeHit(0.4);i
   if(best!==CUT.target){CUT.target=best;drawGuides();}}
 function cutChop(){if(!CUT.method||CUT.finished||CUT.busy)return;cutMove();const c=CUT.target;if(!c)return;
   CUT.busy=true;CUT.anim={t:0,c};}
+function _splitRegs(p,c){if(c.ax==='x'&&p.x0<c.p&&p.x1>c.p)return [{...p,x1:c.p},{...p,x0:c.p}];if(c.ax==='z'&&p.z0<c.p&&p.z1>c.p)return [{...p,z1:c.p},{...p,z0:c.p}];return null;}
+// 써는 방식을 고르면 칼질 결과를 조금씩 미리 계산 → 칼이 닿는 순간에는 꺼내 쓰기만 함.
+// 칼질 순서가 바뀌어도 맞도록 모든 구간 조합을 계산하고, 지금 도마 위 조각에 바로 쓰일 것부터 먼저 함
+function prefetchCuts(){clearTimeout(CUT.pf);const tok=CUT.pfTok=(CUT.pfTok||0)+1;if(!CUT.chops.length||!MODELS[CUT.ing.k])return;
+  const pts=ax=>[0,...CUT.chops.filter(c=>c.ax===ax).map(c=>c.p).sort((a,b)=>a-b),1];
+  const X=pts('x'),Z=pts('z'),jobs=[];
+  const axisJobs=(G,ax,base)=>{for(let len=G.length-1;len>=2;len--)for(let i=0;i+len<G.length;i++){const lo=G[i],hi=G[i+len];
+      for(let k=i+1;k<i+len;k++){const r=ax==='x'?{...base,x0:lo,x1:hi}:{...base,z0:lo,z1:hi};const c=CUT.chops.find(q=>q.ax===ax&&q.p===G[k]);const sp=_splitRegs(r,c);if(sp)jobs.push([r,c,sp]);}}};
+  // 1) 정렬 순서대로 끝까지 썰었을 때의 경로 (가장 흔한 순서) 2) 그 밖의 순서 조합
+  let regs=[{x0:0,x1:1,z0:0,z1:1}];[...X.slice(1,-1).map(p=>['x',p]),...Z.slice(1,-1).map(p=>['z',p])].forEach(([ax,p])=>{const c=CUT.chops.find(q=>q.ax===ax&&q.p===p);const nr=[];
+    regs.forEach(r=>{const sp=_splitRegs(r,c);if(sp){jobs.push([r,c,sp]);nr.push(...sp);}else nr.push(r);});regs=nr;});
+  axisJobs(X,'x',{z0:0,z1:1});for(let i=0;i+1<X.length;i++)axisJobs(Z,'z',{x0:X[i],x1:X[i+1]});
+  const ing=CUT.ing,key=r=>_pkey(ing.k,r.x0,r.x1,r.z0,r.z1);
+  const step=()=>{if(tok!==CUT.pfTok||CUT.ing!==ing)return;if(CUT.busy){CUT.pf=setTimeout(step,40);return;}
+    const live=new Set((CUT.meshes||[]).map(m=>key(m.userData.reg)));
+    let idx=jobs.findIndex(j=>live.has(key(j[0])));if(idx<0)idx=0;   // 지금 도마 위 조각부터
+    CUT.pfLeft=jobs.length;const j=jobs.splice(idx,1)[0];if(!j)return;try{presplitReg(ing,j[0],j[1],j[2][0],j[2][1]);}catch(e){console.warn('presplit',e);}CUT.pf=setTimeout(step,0);};
+  CUT.pf=setTimeout(step,30);}
+function flushPend(n){if(!CUT.pend||!CUT.pend.length)return;let did=false;
+  while(CUT.pend.length&&n-->0){const {m,c,pa,pb}=CUT.pend.shift();const i=CUT.meshes.indexOf(m);if(i<0)continue;
+    const [A,B]=splitPiece(CUT.ing,m,m.userData.reg,c,pa,pb);CUT.group.remove(m);
+    [[A,pa],[B,pb]].forEach(([q,r])=>{q.userData.reg=r;q.position.set(m.position.x-m.userData.cx+q.userData.cx,m.position.y-m.userData.cy+q.userData.cy,m.position.z-m.userData.cz+q.userData.cz);
+      q.rotation.y=(Math.random()-.5)*0.08;q.userData.tgt=q.position.clone();CUT.group.add(q);});
+    CUT.meshes.splice(i,1,A,B);did=true;}
+  if(did)layoutPieces(false);}
 function applyCut(c){
-  const np=[];CUT.pieces.forEach(p=>{if(c.ax==='x'&&p.x0<c.p&&p.x1>c.p){np.push({...p,x1:c.p},{...p,x0:c.p});}else if(c.ax==='z'&&p.z0<c.p&&p.z1>c.p){np.push({...p,z1:c.p},{...p,z0:c.p});}else np.push(p);});
-  CUT.pieces=np;rebuildPieces();          // positions = layout before this cut
+  // 칼선이 지나가는 조각만 둘로 나누고 나머지 조각 메시는 그대로 둠.
+  // 미리 계산된 조각은 바로 바꾸고, 아직 없는 조각은 다음 프레임부터 하나씩 나눔 (한 프레임에 몰아서 멈추지 않게)
+  flushPend(1e9);
+  const np=[],nm=[];CUT.meshes.forEach(m=>{const p=m.userData.reg,rr=_splitRegs(p,c),pa=rr&&rr[0],pb=rr&&rr[1];
+    if(!pa){np.push(p);nm.push(m);return;}
+    np.push(pa,pb);
+    const [ka,kb]=_cutKeys(CUT.ing,pa,pb);if(!(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))&&m.userData.raw){nm.push(m);CUT.pend.push({m,c,pa,pb});return;}
+    CUT.group.remove(m);const [A,B]=splitPiece(CUT.ing,m,p,c,pa,pb);
+    [[A,pa],[B,pb]].forEach(([q,r])=>{q.userData.reg=r;q.position.set(q.userData.cx,q.userData.cy,q.userData.cz);q.userData.tgt=q.position.clone();CUT.group.add(q);nm.push(q);});});
+  CUT.pieces=np;CUT.meshes=nm;layoutPieces(true);          // positions = layout before this cut
   CUT.done.push(c);
   CUT.meshes.forEach(m=>{m.rotation.y=(Math.random()-.5)*0.08;});
   layoutPieces(false);SFX.chop();CUT.shake=0.12;
@@ -83,7 +116,7 @@ function applyCut(c){
   const left=CUT.chops.length-CUT.done.length;
   if(left>0){$('cutTip').textContent=`좋아! 남은 칼질 ${left}번`;if(remainingAxis()==='z'&&c.ax==='x'&&!CUT.chops.filter(q=>q.ax==='x'&&!CUT.done.includes(q)).length)$('cutTip').textContent=`이번엔 세로로! 남은 칼질 ${left}번`;}
   else{$('cutTip').textContent=`${CUT.ing.n} 손질 완료! 딱딱 잘 썰었다 👏`;CUT.finished=true;renderMethods();setTimeout(finishIng,650);}}
-function finishIng(){if(!$('cut').classList.contains('on'))return;
+function finishIng(){if(!$('cut').classList.contains('on'))return;flushPend(1e9);
   S.cut[CUT.ing.k]=CUT.method;
   CUT.flying=CUT.meshes.map((m,i)=>{const wp=new THREE.Vector3();m.getWorldPosition(wp);CUT.group.remove(m);m.position.copy(wp);scene.add(m);
     const a=Math.random()*Math.PI*2,r=Math.random()*0.55;const dst=new THREE.Vector3(BOWL_POS.x+Math.cos(a)*r,0.25+CUT.inBowl*0.006+Math.random()*0.15,BOWL_POS.z+Math.sin(a)*r*0.8);
@@ -99,6 +132,7 @@ function cutFrame(dt){
   if(CUT.method&&!CUT.finished&&CUT.target){const gp=guidePos(CUT.target);if(CUT.target.ax==='x'){tx=CUT.group.position.x+gp;tz=0;}else{tz=gp;tx=CUT.group.position.x;}ty=0.75;}
   if(CUT.anim){CUT.anim.t+=dt;const t=CUT.anim.t;ty=t<0.08?0.75-t/0.08*0.63:0.12+(t-0.08)/0.15*0.63;if(t>=0.08&&!CUT.anim.hit){CUT.anim.hit=true;applyCut(CUT.anim.c);}if(t>0.23){CUT.anim=null;CUT.busy=false;}}
   k.position.x+=(tx-k.position.x)*Math.min(1,dt*18);k.position.z+=(tz-k.position.z)*Math.min(1,dt*18);k.position.y=CUT.anim?ty:k.position.y+(ty-k.position.y)*Math.min(1,dt*10);
+  flushPend(1);
   if(CUT.meshes)CUT.meshes.forEach(m=>m.position.lerp(m.userData.tgt,Math.min(1,dt*10)));
   if(CUT.flying){let all=true;CUT.flying.forEach(f=>{f.t+=dt*1.8;const t=Math.max(0,Math.min(1,f.t));if(t<1)all=false;f.m.position.lerpVectors(f.from,f.to,t);f.m.position.y+=Math.sin(t*Math.PI)*1.2;const s=f.s0+(f.s1-f.s0)*t;f.m.scale.setScalar(s);f.m.rotation.x+=dt*4*(1-t);});if(all)CUT.flying=null;}
   if(!CAMTW){if(CUT.shake>0){CUT.shake-=dt;camera.position.y=3.7+Math.sin(CUT.shake*90)*0.02;}else camera.position.y=3.7;}}

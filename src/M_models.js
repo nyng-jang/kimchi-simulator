@@ -30,10 +30,14 @@ const _h3=(a,b,c,s)=>{let n=Math.sin(a*127.1+b*311.7+c*74.7+(s||0)*19.3)*43758.5
 function _vn(x,y,z){const X=Math.floor(x),Y=Math.floor(y),Z=Math.floor(z),fx=x-X,fy=y-Y,fz=z-Z,s=t=>t*t*(3-2*t),l=(a,b,t)=>a+(b-a)*t,h=(a,b,c)=>_h3(a,b,c);
   return l(l(l(h(X,Y,Z),h(X+1,Y,Z),s(fx)),l(h(X,Y+1,Z),h(X+1,Y+1,Z),s(fx)),s(fy)),l(l(h(X,Y,Z+1),h(X+1,Y,Z+1),s(fx)),l(h(X,Y+1,Z+1),h(X+1,Y+1,Z+1),s(fx)),s(fy)),s(fz));}
 function _spots(p,cell,rad,prob,seed,stretch){ // 격자 칸마다 점 하나 (확률 prob), 반지름 rad 안이면 true
-  const cx=Math.floor(p[0]/cell),cy=Math.floor(p[1]/cell),cz=Math.floor(p[2]/cell);
-  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){const a=cx+i,b=cy+j,c=cz+k;if(_h3(a,b,c,seed)>prob)continue;
-    const q=[(a+_h3(a,b,c,seed+1))*cell,(b+_h3(a,b,c,seed+2))*cell,(c+_h3(a,b,c,seed+3))*cell];const st=stretch||[1,1,1];
-    const d=Math.hypot((p[0]-q[0])/st[0],(p[1]-q[1])/st[1],(p[2]-q[2])/st[2]);if(d<rad)return [q,d/rad];}return null;}
+  const st=stretch||_ONE3,cx=Math.floor(p[0]/cell),cy=Math.floor(p[1]/cell),cz=Math.floor(p[2]/cell);
+  const rx=rad*st[0],ry=rad*st[1],rz=rad*st[2];
+  for(let i=-1;i<=1;i++){const a=cx+i,lx=a*cell;if(p[0]<lx-rx||p[0]>lx+cell+rx)continue; // 점이 닿을 수 없는 칸은 건너뜀
+   for(let j=-1;j<=1;j++){const b=cy+j,ly=b*cell;if(p[1]<ly-ry||p[1]>ly+cell+ry)continue;
+    for(let k=-1;k<=1;k++){const c=cz+k,lz=c*cell;if(p[2]<lz-rz||p[2]>lz+cell+rz)continue;if(_h3(a,b,c,seed)>prob)continue;
+    const q=[(a+_h3(a,b,c,seed+1))*cell,(b+_h3(a,b,c,seed+2))*cell,(c+_h3(a,b,c,seed+3))*cell];
+    const d=Math.hypot((p[0]-q[0])/st[0],(p[1]-q[1])/st[1],(p[2]-q[2])/st[2]);if(d<rad)return [q,d/rad];}}}return null;}
+const _ONE3=[1,1,1];
 const _mix=(a,b,t)=>{const A=hex(a),B=hex(b);return A.lerp(B,Math.max(0,Math.min(1,t)));};
 const INNER={
   watermelon:p=>{const d=Math.hypot(p[0],p[1]-0.601,p[2])/0.61;
@@ -86,31 +90,54 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
     const cc=typeof capColor==='function'?null:hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
       const e1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],e2=[c2[0]-a[0],c2[1]-a[1],c2[2]-a[2]];const nA=A===0?e1[1]*e2[2]-e1[2]*e2[1]:e1[0]*e2[1]-e1[1]*e2[0];
       if(Math.sign(nA)!==want)[b,c2]=[c2,b]; // 단면이 잘린 쪽 바깥을 보도록 방향 맞춤
-      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
+      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);const cen=[0,0,0];for(let pi=0;pi<parts.length;pi++){const [p,q,r]=parts[pi];cen[0]=(p[0]+q[0]+r[0])/3;cen[1]=(p[1]+q[1]+r[1])/3;cen[2]=(p[2]+q[2]+r[2])/3;const col2=capColor(cen);
+        out.push(p[0],p[1],p[2],q[0],q[1],q[2],r[0],r[1],r[2]);const R_=col2.r,G_=col2.g,B_=col2.b;oc.push(R_,G_,B_,R_,G_,B_,R_,G_,B_);}}
       else for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
 function _cull(P,C,o,a,b){a-=1e-3;b+=1e-3;const op=[],oc=[];for(let i=0;i<P.length;i+=9){const u=P[i+o],v=P[i+3+o],w=P[i+6+o];
   if((u<a&&v<a&&w<a)||(u>b&&v>b&&w>b))continue;for(let j=0;j<9;j++){op.push(P[i+j]);oc.push(C[i+j]);}}return [op,oc];}
-function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
-  const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;const capC=pat||ing.inner;
+function _sliceCtx(ing){const M=MODELS[ing.k];const b=M.box;
+  const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;
+  return {M,capC:pat||ing.inner,X:t=>b.min.x+(b.max.x-b.min.x)*t,Z:t=>b.min.z+(b.max.z-b.min.z)*t};}
+// 원본 모델에서 (x0~x1, z0~z1) 범위를 잘라낸 꼭짓점 배열 (가운데 맞추기 전)
+function sliceRaw(ing,x0,x1,z0,z1){const {M,capC,X,Z}=_sliceCtx(ing),eps=1e-5;
   let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
-  const X=t=>b.min.x+(b.max.x-b.min.x)*t, Z=t=>b.min.z+(b.max.z-b.min.z)*t;
-  // 자르기 전에 이번 축 범위 밖 삼각형만 버림 (x로 다 자른 뒤에 z를 거름 → 단면 모양은 그대로)
   [pos,col]=_cull(pos,col,0,X(x0),X(x1));
   if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,capC);
   if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,capC);
   [pos,col]=_cull(pos,col,2,Z(z0),Z(z1));
   if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,capC);
   if(z1<0.9999)[pos,col]=clipHalf(pos,col,'z',Z(z1)-eps,false,capC);
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  return {pos,col};}
+// 이미 잘린 조각(raw)을 칼선 하나로 둘로 나눔 → 원본 전체를 다시 자르지 않음
+function splitRaw(ing,raw,ax,t){const {capC,X,Z}=_sliceCtx(ing),eps=1e-5,v=ax==='x'?X(t):Z(t),o=ax==='x'?0:2;
+  let [lp,lc]=_cull(raw.pos,raw.col,o,-1e9,v);[lp,lc]=clipHalf(lp,lc,ax,v-eps,false,capC);
+  let [hp,hc]=_cull(raw.pos,raw.col,o,v,1e9);[hp,hc]=clipHalf(hp,hc,ax,v+eps,true,capC);
+  return [{pos:lp,col:lc},{pos:hp,col:hc}];}
+function meshFromRaw(raw){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(raw.pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(raw.col,3));
   g.computeBoundingBox();const bb=g.boundingBox;const cx=(bb.min.x+bb.max.x)/2,cy=(bb.min.y+bb.max.y)/2,cz=(bb.min.z+bb.max.z)/2;
   g.translate(-cx,-cy,-cz);g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:6,specular:0x111111,side:THREE.DoubleSide}));
-  m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array)};return m;}
+  m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array),raw};return m;}
+function slicePiece(ing,x0,x1,z0,z1){return meshFromRaw(sliceRaw(ing,x0,x1,z0,z1));}
 const PIECE_CACHE=new Map();
-function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=[ing.k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(5):v).join('|');let src=PIECE_CACHE.get(key);
-      if(!src){src=slicePiece(ing,x0,x1,z0,z1);PIECE_CACHE.set(key,src);if(PIECE_CACHE.size>300)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
-      const m=new THREE.Mesh(src.geometry.clone(),src.material.clone());m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0};return m;}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+function _pkey(k,x0,x1,z0,z1){return [k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(5):v).join('|');}
+function _pcache(key,m){PIECE_CACHE.set(key,m);if(PIECE_CACHE.size>800)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
+function _pclone(src){const m=new THREE.Mesh(src.geometry.clone(),src.material.clone());m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0,raw:src.userData.raw};return m;}
+function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=_pkey(ing.k,x0,x1,z0,z1);let src=PIECE_CACHE.get(key);
+      if(!src){src=slicePiece(ing,x0,x1,z0,z1);_pcache(key,src);}return _pclone(src);}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+// 조각 p(메시 m)를 칼선 c로 나눈 두 조각 메시
+function _cutKeys(ing,pa,pb){return [_pkey(ing.k,pa.x0,pa.x1,pa.z0,pa.z1),_pkey(ing.k,pb.x0,pb.x1,pb.z0,pb.z1)];}
+// 미리 잘라 두기: 결과를 캐시에만 넣음 (칼질 순간에는 꺼내 쓰기만 하게)
+function presplit(ing,m,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return;
+  if(!MODELS[ing.k]||!m.userData.raw)return;const [ra,rb]=splitRaw(ing,m.userData.raw,c.ax,c.p);_pcache(ka,meshFromRaw(ra));_pcache(kb,meshFromRaw(rb));}
+function presplitReg(ing,par,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return true;
+  const src=PIECE_CACHE.get(_pkey(ing.k,par.x0,par.x1,par.z0,par.z1));if(!src||!src.userData.raw)return false;
+  const [ra,rb]=splitRaw(ing,src.userData.raw,c.ax,c.p);_pcache(ka,meshFromRaw(ra));_pcache(kb,meshFromRaw(rb));return true;}
+function splitPiece(ing,m,p,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return [_pclone(PIECE_CACHE.get(ka)),_pclone(PIECE_CACHE.get(kb))];
+  if(MODELS[ing.k]&&m.userData.raw){try{const [ra,rb]=splitRaw(ing,m.userData.raw,c.ax,c.p);
+      const A=meshFromRaw(ra),B=meshFromRaw(rb);_pcache(_pkey(ing.k,pa.x0,pa.x1,pa.z0,pa.z1),A);_pcache(_pkey(ing.k,pb.x0,pb.x1,pb.z0,pb.z1),B);return [_pclone(A),_pclone(B)];}catch(e){console.warn('split',e);}}
+  return [buildPiece(ing,pa.x0,pa.x1,pa.z0,pa.z1),buildPiece(ing,pb.x0,pb.x1,pb.z0,pb.z1)];}
 function modelZRange(ing){const M=MODELS[ing.k];if(M)return [M.box.min.z,M.box.max.z];const zs=ing.sec.map(p=>p[0]);return [Math.min(...zs),Math.max(...zs)];}
 function modelTop(ing){const M=MODELS[ing.k];if(M)return M.box.max.y;return Math.max(...ing.sec.map(p=>p[1]));}
 function container(s){const src=SEAMODELS[s.k];if(!src)return containerProc(s);

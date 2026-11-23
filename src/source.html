@@ -356,42 +356,42 @@ const STORE=Object.fromEntries(STORES.map(s=>[s.k,s]));
 // 숨은 레시피 (위에서부터 먼저 맞는 것 하나)
 const has=(c,k)=>c.sel.includes(k), sp=(c,k)=>c.season[k]||0, weirdCnt=c=>c.sel.filter(k=>ING[k].g==='weird').length+SEAS.filter(s=>s.weird&&sp(c,s.k)>0).length;
 const RECIPES=[
- {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'양념은 어디 팔아먹었냐? 이건 그냥 생풀이여 생풀!'},
- {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치여 피자여! 이탈리아 할매가 들으면 울겄다'},
- {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터지네? 할미 틀니 날아갈 뻔했다!'},
- {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를 버무려? 니 할아버지가 보면 뒷목 잡고 쓰러지겄다'},
- {k:'cvs',taste:'시원한 민트와 달콤한 초코, 치약 같은 상쾌함.',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'김치에 치약을 넣었냐? 양치하고 밥 먹는 기분이다잉'},
- {k:'hawaii',taste:'새콤달콤한 파인애플이 매콤함을 감싸는 열대의 맛.',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'파인애플을 김치에? 할미랑 장난하냐? …근디 고기랑은 먹겄네'},
- {k:'hell',taste:'첫입부터 혀가 얼얼, 눈물 나게 매운 맛.',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 할미 죽는다! 119 불러라! 혀가 다 타버렸다!'},
- {k:'sea',taste:'바닷물을 그대로 마신 듯 짜디짠 맛.',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'이건 김치가 아니라 소금 덩어리여! 바다를 통째로 담갔냐!'},
- {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'흠, 백김치는 제법이네. 이건 할미가 인정한다잉'},
- {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명인 거 알긴 아는구나. 잘했다잉'},
- {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'무생채는 그럭저럭 봐줄 만하네. 밥 한 공기는 먹겄다'},
- {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이? 오메, 이건 수육 삶아야 쓰겄다. 제대로네!'},
- {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'묵은지까지 할 줄 알어? 이건 할미도 할 말이 없다잉'},
- {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'오메! 할미 김치를 몰래 훔쳐 갔냐? 똑같다 똑같어!'},
+ {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'얘야… 양념은 어디 갔니? 그냥 생야채구나 허허'},
+ {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치냐 피자냐! 근데 애들은 좋아하겄다~'},
+ {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터진다! 이건 화채여 김치여?'},
+ {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를… 니 할아버지가 보면 기절하겄다'},
+ {k:'cvs',taste:'시원한 민트와 달콤한 초코, 치약 같은 상쾌함.',n:'편의점 신상 김치',hint:'초록 쿠키와 민트의 만남',test:c=>has(c,'mintchoco')&&(has(c,'dujjon')||sp(c,'choco')>0),line:'요즘 젊은 애들은 이런 걸 먹냐? 치약 맛이 나는디?'},
+ {k:'hawaii',taste:'새콤달콤한 파인애플이 매콤함을 감싸는 열대의 맛.',n:'하와이안 김치',hint:'노란 열대 과일',test:c=>has(c,'pineapple')&&weirdCnt(c)===1,line:'새콤달콤하니… 의외로 고기랑 먹으면 괜찮겠구먼!'},
+ {k:'hell',taste:'첫입부터 혀가 얼얼, 눈물 나게 매운 맛.',n:'지옥불 김치',hint:'매운맛을 끝까지 올리면',test:c=>c.stat.spicy>=9,line:'아이고 맵다! 물! 물 좀 다오! 혀가 불난다!'},
+ {k:'sea',taste:'바닷물을 그대로 마신 듯 짜디짠 맛.',n:'바다보다 짠 김치',hint:'짠맛을 끝까지 올리면',test:c=>c.stat.salty>=8,line:'켁켁! 이건 소금이지 김치가 아니여!'},
+ {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'아이고 고와라~ 시원한 백김치구나. 할미가 좋아하는 거여'},
+ {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명이지! 아주 잘 했다!'},
+ {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'밥에 쓱쓱 비벼 먹으면 딱이겄다~'},
+ {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이에 수육 한 점이면 끝나는 거여!'},
+ {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'이건 내년까지 두고 먹어도 되겄다. 진짜 장인이네!'},
+ {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'아이고 우리 강아지! 할미 김치랑 똑같다 똑같어!'},
 ];
 
 // 할머니 반응 (조건 맞는 것 최대 3개)
 // 할머니 반응: [조건, 첫 문장, '~도' 중간 연결, '~도' 마지막 마무리]
 const REACTIONS=[
- [c=>c.stat.salty>=5,'켁! 소금 한 포대를 다 부었냐? 물부터 가져와!','짜기는 바닷물 저리 가라고…','짜기도 바닷물보다 짜다잉! 신장 다 상하겄네!'],
- [c=>c.stat.spicy>=6,'아이고 매워! 할미 잡을라고 작정했냐잉!','맵기는 또 오지게 맵고…','맵기도 오지게 매워서 혀가 다 녹는다잉!'],
- [c=>c.stat.sweet>=5,'이게 김치여 사탕이여? 이빨 다 썩겄다!','달기는 사탕 저리 가라고…','달기도 사탕처럼 달아서 이빨 다 썩겄다!'],
- [c=>c.stat.weird>=3,'오메, 이걸 김치라고 담갔냐? 할미 눈을 의심했다','재료도 요상망측하고…','재료도 요상망측한디… 근디 왜 자꾸 손이 가냐잉'],
- [c=>c.stat.umami>=3,'흥, 감칠맛 하나는 봐줄 만하네','감칠맛은 그나마 살았고…','그래도 감칠맛 하나는 살렸네. 봐준다잉'],
- [c=>c.stat.cool>=3,'시원하긴 하네. 이건 칭찬해 주마','시원하기는 하고…','시원하기도 하니 그건 봐준다잉'],
- [c=>sp(c,'gochu')===0&&Object.values(c.season).some(v=>v),'고춧가루는 어따 팔아먹었냐? 허여멀건하네','빛깔도 허여멀건하고…','빛깔도 허여멀건한 게 이게 김치 맞냐잉?'],
- [c=>c.stat.salty<1&&Object.values(c.season).some(v=>v),'맹탕이여 맹탕! 맹물에 배추 담갔냐?','간은 또 맹탕이고…','간도 맹탕이니 소금 쬐끔 더 쳐라잉!'],
+ [c=>c.stat.salty>=5,'켁켁, 너무 짜! 물 좀 다오!','짜기도 엄청 짜고…','짜기도 엄청 짜구먼! 물 좀 다오~'],
+ [c=>c.stat.spicy>=6,'으아, 입에서 불 난다잉!','맵기도 어찌나 맵고…','맵기도 어찌나 매운지 혀가 얼얼하다!'],
+ [c=>c.stat.sweet>=5,'이거… 디저트냐? 달달하네~','달기도 달고…','달기도 디저트처럼 달구먼!'],
+ [c=>c.stat.weird>=3,'재료가 이상해! 근데 묘하게 손이 가네?','재료도 요상하고…','재료도 요상한디 묘하게 손이 가네?'],
+ [c=>c.stat.umami>=3,'오~ 감칠맛은 제대로구나!','감칠맛도 제대로고…','그래도 감칠맛도 제대로네!'],
+ [c=>c.stat.cool>=3,'시원~하다! 속이 뻥 뚫리네','시원하기도 하고…','시원하기도 해서 속이 뻥 뚫리네!'],
+ [c=>sp(c,'gochu')===0&&Object.values(c.season).some(v=>v),'빨갛지 않은 김치도 있구나!','빛깔도 하얗고…','빛깔도 하얀 게 신기하구먼!'],
+ [c=>c.stat.salty<1&&Object.values(c.season).some(v=>v),'싱겁다~ 소금 좀 더 쳐야겄다','간도 좀 싱겁고…','간도 좀 싱거우니 소금 쬐끔 더 쳐라~'],
 ];
 // 첫 문장은 그대로, 두 번째부터는 '~도'로 이어 붙이고 마지막은 마무리형으로
 function composeReactions(c,recipe){const hits=REACTIONS.filter(r=>{try{return r[0](c);}catch(e){return false;}});
   const lines=[];if(recipe)lines.push(recipe.line);
   const room=3-lines.length, use=hits.slice(0,room);
   use.forEach((r,i)=>{if(!lines.length){lines.push(r[1]);return;}lines.push(i===use.length-1?r[3]:r[2]);});
-  if(!lines.length)lines.push('음… 이게 니 김치 맛이구나. 할미는 말을 아끼겄다');
+  if(!lines.length)lines.push('음… 이게 니가 만든 김치 맛이구나!');
   return lines;}
-const CLOSERS=['그래도 굶진 않겄다. 다 먹어라잉, 남기면 혼난다','다음엔 할미 하는 거 똑바로 보고 따라 해라잉','혼자 김장한다고 고생은 했다. 맛 얘기는… 다음에 하자','멀리서 이거 담근다고 애썼다. 근디 연습은 더 해라잉'];
+const CLOSERS=['그래도 우리 손주가 만든 거라 할미는 맛있다~','다음엔 할미가 비법 하나 더 알려주마.','밥은 잘 챙겨 먹고 다니지? 김치 있으니 든든하겄다.','멀리서 혼자 김장도 하고 다 컸네 다 컸어.'];
 
 
 
@@ -445,7 +445,7 @@ function pinkBurst(a,t,dur,ftype,f0,f1,q,vol,attack){const n=Math.floor(a.sample
   const g=a.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+dur*attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f).connect(g).connect(a.destination);s.start(t);s.stop(t+dur);}
 const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},stir(total){const a=ac();if(!a)return;const m=3.5,T=total||2.4,t0=a.currentTime;for(let t=0;t<T;t+=0.3){pinkBurst(a,t0+t,0.6,'bandpass',220*m,480*m,1.5,1.6,0.5);pinkBurst(a,t0+t+0.15,0.3,'lowpass',900*m,300*m,2,0.4,0.3);}},boing(){tone(300,700,0.18,0.25,'triangle');}};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1600);}
-const hex=c=>new THREE.Color(c);
+const _HEXC=new Map();const hex=c=>{if(typeof c!=='string')return new THREE.Color(c);let v=_HEXC.get(c);if(!v){v=new THREE.Color(c);_HEXC.set(c,v);}return v.clone();}; // 색 문자열 해석 결과 재사용
 const rnd=(a,b)=>a+Math.random()*(b-a);
 
 /* =========================================================
@@ -783,10 +783,14 @@ const _h3=(a,b,c,s)=>{let n=Math.sin(a*127.1+b*311.7+c*74.7+(s||0)*19.3)*43758.5
 function _vn(x,y,z){const X=Math.floor(x),Y=Math.floor(y),Z=Math.floor(z),fx=x-X,fy=y-Y,fz=z-Z,s=t=>t*t*(3-2*t),l=(a,b,t)=>a+(b-a)*t,h=(a,b,c)=>_h3(a,b,c);
   return l(l(l(h(X,Y,Z),h(X+1,Y,Z),s(fx)),l(h(X,Y+1,Z),h(X+1,Y+1,Z),s(fx)),s(fy)),l(l(h(X,Y,Z+1),h(X+1,Y,Z+1),s(fx)),l(h(X,Y+1,Z+1),h(X+1,Y+1,Z+1),s(fx)),s(fy)),s(fz));}
 function _spots(p,cell,rad,prob,seed,stretch){ // 격자 칸마다 점 하나 (확률 prob), 반지름 rad 안이면 true
-  const cx=Math.floor(p[0]/cell),cy=Math.floor(p[1]/cell),cz=Math.floor(p[2]/cell);
-  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){const a=cx+i,b=cy+j,c=cz+k;if(_h3(a,b,c,seed)>prob)continue;
-    const q=[(a+_h3(a,b,c,seed+1))*cell,(b+_h3(a,b,c,seed+2))*cell,(c+_h3(a,b,c,seed+3))*cell];const st=stretch||[1,1,1];
-    const d=Math.hypot((p[0]-q[0])/st[0],(p[1]-q[1])/st[1],(p[2]-q[2])/st[2]);if(d<rad)return [q,d/rad];}return null;}
+  const st=stretch||_ONE3,cx=Math.floor(p[0]/cell),cy=Math.floor(p[1]/cell),cz=Math.floor(p[2]/cell);
+  const rx=rad*st[0],ry=rad*st[1],rz=rad*st[2];
+  for(let i=-1;i<=1;i++){const a=cx+i,lx=a*cell;if(p[0]<lx-rx||p[0]>lx+cell+rx)continue; // 점이 닿을 수 없는 칸은 건너뜀
+   for(let j=-1;j<=1;j++){const b=cy+j,ly=b*cell;if(p[1]<ly-ry||p[1]>ly+cell+ry)continue;
+    for(let k=-1;k<=1;k++){const c=cz+k,lz=c*cell;if(p[2]<lz-rz||p[2]>lz+cell+rz)continue;if(_h3(a,b,c,seed)>prob)continue;
+    const q=[(a+_h3(a,b,c,seed+1))*cell,(b+_h3(a,b,c,seed+2))*cell,(c+_h3(a,b,c,seed+3))*cell];
+    const d=Math.hypot((p[0]-q[0])/st[0],(p[1]-q[1])/st[1],(p[2]-q[2])/st[2]);if(d<rad)return [q,d/rad];}}}return null;}
+const _ONE3=[1,1,1];
 const _mix=(a,b,t)=>{const A=hex(a),B=hex(b);return A.lerp(B,Math.max(0,Math.min(1,t)));};
 const INNER={
   watermelon:p=>{const d=Math.hypot(p[0],p[1]-0.601,p[2])/0.61;
@@ -839,31 +843,54 @@ function clipHalf(pos,col,axis,c,keepGreater,capColor){
     const cc=typeof capColor==='function'?null:hex(capColor),want=keepGreater?-1:1;tris.forEach(t=>{const k=0.95+Math.random()*0.08;let [a,b,c2]=t.map(id=>loop[id]);
       const e1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],e2=[c2[0]-a[0],c2[1]-a[1],c2[2]-a[2]];const nA=A===0?e1[1]*e2[2]-e1[2]*e2[1]:e1[0]*e2[1]-e1[1]*e2[0];
       if(Math.sign(nA)!==want)[b,c2]=[c2,b]; // 단면이 잘린 쪽 바깥을 보도록 방향 맞춤
-      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);for(const [p,q,r] of parts){const cen=[(p[0]+q[0]+r[0])/3,(p[1]+q[1]+r[1])/3,(p[2]+q[2]+r[2])/3];const col2=capColor(cen);out.push(...p,...q,...r);for(let z=0;z<3;z++)oc.push(col2.r,col2.g,col2.b);}}
+      if(typeof capColor==='function'){const parts=[];_subdiv(a,b,c2,0.028,parts,0);const cen=[0,0,0];for(let pi=0;pi<parts.length;pi++){const [p,q,r]=parts[pi];cen[0]=(p[0]+q[0]+r[0])/3;cen[1]=(p[1]+q[1]+r[1])/3;cen[2]=(p[2]+q[2]+r[2])/3;const col2=capColor(cen);
+        out.push(p[0],p[1],p[2],q[0],q[1],q[2],r[0],r[1],r[2]);const R_=col2.r,G_=col2.g,B_=col2.b;oc.push(R_,G_,B_,R_,G_,B_,R_,G_,B_);}}
       else for(const v of[a,b,c2]){out.push(...v);oc.push(cc.r*k,cc.g*k,cc.b*k);}});}
   return [out,oc];}
 function _cull(P,C,o,a,b){a-=1e-3;b+=1e-3;const op=[],oc=[];for(let i=0;i<P.length;i+=9){const u=P[i+o],v=P[i+3+o],w=P[i+6+o];
   if((u<a&&v<a&&w<a)||(u>b&&v>b&&w>b))continue;for(let j=0;j<9;j++){op.push(P[i+j]);oc.push(C[i+j]);}}return [op,oc];}
-function slicePiece(ing,x0,x1,z0,z1){const M=MODELS[ing.k];const b=M.box,eps=1e-5;
-  const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;const capC=pat||ing.inner;
+function _sliceCtx(ing){const M=MODELS[ing.k];const b=M.box;
+  const pat=INNER[ing.k]&&M.xf?(p=>{const {t,s}=M.xf;return INNER[ing.k]([p[0]/s+t[0],p[1]/s+t[1],p[2]/s+t[2]]);}):null;
+  return {M,capC:pat||ing.inner,X:t=>b.min.x+(b.max.x-b.min.x)*t,Z:t=>b.min.z+(b.max.z-b.min.z)*t};}
+// 원본 모델에서 (x0~x1, z0~z1) 범위를 잘라낸 꼭짓점 배열 (가운데 맞추기 전)
+function sliceRaw(ing,x0,x1,z0,z1){const {M,capC,X,Z}=_sliceCtx(ing),eps=1e-5;
   let pos=Array.from(M.geo.attributes.position.array),col=Array.from(M.geo.attributes.color.array);
-  const X=t=>b.min.x+(b.max.x-b.min.x)*t, Z=t=>b.min.z+(b.max.z-b.min.z)*t;
-  // 자르기 전에 이번 축 범위 밖 삼각형만 버림 (x로 다 자른 뒤에 z를 거름 → 단면 모양은 그대로)
   [pos,col]=_cull(pos,col,0,X(x0),X(x1));
   if(x0>0.0001)[pos,col]=clipHalf(pos,col,'x',X(x0)+eps,true,capC);
   if(x1<0.9999)[pos,col]=clipHalf(pos,col,'x',X(x1)-eps,false,capC);
   [pos,col]=_cull(pos,col,2,Z(z0),Z(z1));
   if(z0>0.0001)[pos,col]=clipHalf(pos,col,'z',Z(z0)+eps,true,capC);
   if(z1<0.9999)[pos,col]=clipHalf(pos,col,'z',Z(z1)-eps,false,capC);
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  return {pos,col};}
+// 이미 잘린 조각(raw)을 칼선 하나로 둘로 나눔 → 원본 전체를 다시 자르지 않음
+function splitRaw(ing,raw,ax,t){const {capC,X,Z}=_sliceCtx(ing),eps=1e-5,v=ax==='x'?X(t):Z(t),o=ax==='x'?0:2;
+  let [lp,lc]=_cull(raw.pos,raw.col,o,-1e9,v);[lp,lc]=clipHalf(lp,lc,ax,v-eps,false,capC);
+  let [hp,hc]=_cull(raw.pos,raw.col,o,v,1e9);[hp,hc]=clipHalf(hp,hc,ax,v+eps,true,capC);
+  return [{pos:lp,col:lc},{pos:hp,col:hc}];}
+function meshFromRaw(raw){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(raw.pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(raw.col,3));
   g.computeBoundingBox();const bb=g.boundingBox;const cx=(bb.min.x+bb.max.x)/2,cy=(bb.min.y+bb.max.y)/2,cz=(bb.min.z+bb.max.z)/2;
   g.translate(-cx,-cy,-cz);g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({vertexColors:true,flatShading:true,shininess:6,specular:0x111111,side:THREE.DoubleSide}));
-  m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array)};return m;}
+  m.userData={cx,cy,cz,col0:new Float32Array(g.attributes.color.array),raw};return m;}
+function slicePiece(ing,x0,x1,z0,z1){return meshFromRaw(sliceRaw(ing,x0,x1,z0,z1));}
 const PIECE_CACHE=new Map();
-function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=[ing.k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(5):v).join('|');let src=PIECE_CACHE.get(key);
-      if(!src){src=slicePiece(ing,x0,x1,z0,z1);PIECE_CACHE.set(key,src);if(PIECE_CACHE.size>300)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
-      const m=new THREE.Mesh(src.geometry.clone(),src.material.clone());m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0};return m;}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+function _pkey(k,x0,x1,z0,z1){return [k,x0,x1,z0,z1].map(v=>typeof v==='number'?v.toFixed(5):v).join('|');}
+function _pcache(key,m){PIECE_CACHE.set(key,m);if(PIECE_CACHE.size>800)PIECE_CACHE.delete(PIECE_CACHE.keys().next().value);}
+function _pclone(src){const m=new THREE.Mesh(src.geometry.clone(),src.material.clone());m.userData={cx:src.userData.cx,cy:src.userData.cy,cz:src.userData.cz,col0:src.userData.col0,raw:src.userData.raw};return m;}
+function buildPiece(ing,x0,x1,z0,z1){if(MODELS[ing.k]){try{const key=_pkey(ing.k,x0,x1,z0,z1);let src=PIECE_CACHE.get(key);
+      if(!src){src=slicePiece(ing,x0,x1,z0,z1);_pcache(key,src);}return _pclone(src);}catch(e){console.warn('slice',e);}}return buildPieceProc(ing,x0,x1,z0,z1);}
+// 조각 p(메시 m)를 칼선 c로 나눈 두 조각 메시
+function _cutKeys(ing,pa,pb){return [_pkey(ing.k,pa.x0,pa.x1,pa.z0,pa.z1),_pkey(ing.k,pb.x0,pb.x1,pb.z0,pb.z1)];}
+// 미리 잘라 두기: 결과를 캐시에만 넣음 (칼질 순간에는 꺼내 쓰기만 하게)
+function presplit(ing,m,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return;
+  if(!MODELS[ing.k]||!m.userData.raw)return;const [ra,rb]=splitRaw(ing,m.userData.raw,c.ax,c.p);_pcache(ka,meshFromRaw(ra));_pcache(kb,meshFromRaw(rb));}
+function presplitReg(ing,par,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return true;
+  const src=PIECE_CACHE.get(_pkey(ing.k,par.x0,par.x1,par.z0,par.z1));if(!src||!src.userData.raw)return false;
+  const [ra,rb]=splitRaw(ing,src.userData.raw,c.ax,c.p);_pcache(ka,meshFromRaw(ra));_pcache(kb,meshFromRaw(rb));return true;}
+function splitPiece(ing,m,p,c,pa,pb){const [ka,kb]=_cutKeys(ing,pa,pb);if(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))return [_pclone(PIECE_CACHE.get(ka)),_pclone(PIECE_CACHE.get(kb))];
+  if(MODELS[ing.k]&&m.userData.raw){try{const [ra,rb]=splitRaw(ing,m.userData.raw,c.ax,c.p);
+      const A=meshFromRaw(ra),B=meshFromRaw(rb);_pcache(_pkey(ing.k,pa.x0,pa.x1,pa.z0,pa.z1),A);_pcache(_pkey(ing.k,pb.x0,pb.x1,pb.z0,pb.z1),B);return [_pclone(A),_pclone(B)];}catch(e){console.warn('split',e);}}
+  return [buildPiece(ing,pa.x0,pa.x1,pa.z0,pa.z1),buildPiece(ing,pb.x0,pb.x1,pb.z0,pb.z1)];}
 function modelZRange(ing){const M=MODELS[ing.k];if(M)return [M.box.min.z,M.box.max.z];const zs=ing.sec.map(p=>p[0]);return [Math.min(...zs),Math.max(...zs)];}
 function modelTop(ing){const M=MODELS[ing.k];if(M)return M.box.max.y;return Math.max(...ing.sec.map(p=>p[1]));}
 function container(s){const src=SEAMODELS[s.k];if(!src)return containerProc(s);
@@ -902,7 +929,7 @@ function enterCut(){
 function loadIng(){
   if(CUT.group)scene.remove(CUT.group);
   const k=CUT.queue[CUT.qi];const ing=ING[k];
-  CUT.ing=ing;CUT.method=null;CUT.chops=[];CUT.done=[];CUT.busy=false;CUT.finished=false;
+  CUT.ing=ing;CUT.method=null;CUT.chops=[];CUT.done=[];CUT.pend=[];CUT.busy=false;CUT.finished=false;
   CUT.group=new THREE.Group();CUT.group.position.set(BOARD_X,0.14,0);scene.add(CUT.group);
   CUT.pieces=[{x0:0,x1:1,z0:0,z1:1}];rebuildPieces();
   CUT.guides=new THREE.Group();CUT.group.add(CUT.guides);
@@ -923,7 +950,7 @@ function renderMethods(){const started=CUT.done.length>0;
   $('methods').innerHTML=METHODS.map(m=>`<button data-k="${m.k}" class="${CUT.method===m.k?'on':''}" ${started||CUT.finished?'disabled':''}>${m.n}<small>${m.d}</small></button>`).join('');
   document.querySelectorAll('#methods button').forEach(b=>b.onclick=()=>pickMethod(b.dataset.k));}
 function pickMethod(k){SFX.click();CUT.method=k;const m=METHOD[k];
-  CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();
+  CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();prefetchCuts();
   if(!CUT.chops.length){$('cutTip').textContent='통째로 넣기! 그대로 그릇에 담아요';setTimeout(finishIng,500);CUT.finished=true;renderMethods();}
   else $('cutTip').textContent=(TAP?'점선을 톡 터치하면 썰어요!':'칼을 점선에 맞추고 클릭! (스페이스바도 OK)')+` · 남은 칼질 ${CUT.chops.length}번`;}
 function secW(ing){return modelZRange(ing);}
@@ -944,9 +971,42 @@ function cutMove(){if(!CUT.method||CUT.finished)return;const hit=planeHit(0.4);i
   if(best!==CUT.target){CUT.target=best;drawGuides();}}
 function cutChop(){if(!CUT.method||CUT.finished||CUT.busy)return;cutMove();const c=CUT.target;if(!c)return;
   CUT.busy=true;CUT.anim={t:0,c};}
+function _splitRegs(p,c){if(c.ax==='x'&&p.x0<c.p&&p.x1>c.p)return [{...p,x1:c.p},{...p,x0:c.p}];if(c.ax==='z'&&p.z0<c.p&&p.z1>c.p)return [{...p,z1:c.p},{...p,z0:c.p}];return null;}
+// 써는 방식을 고르면 칼질 결과를 조금씩 미리 계산 → 칼이 닿는 순간에는 꺼내 쓰기만 함.
+// 칼질 순서가 바뀌어도 맞도록 모든 구간 조합을 계산하고, 지금 도마 위 조각에 바로 쓰일 것부터 먼저 함
+function prefetchCuts(){clearTimeout(CUT.pf);const tok=CUT.pfTok=(CUT.pfTok||0)+1;if(!CUT.chops.length||!MODELS[CUT.ing.k])return;
+  const pts=ax=>[0,...CUT.chops.filter(c=>c.ax===ax).map(c=>c.p).sort((a,b)=>a-b),1];
+  const X=pts('x'),Z=pts('z'),jobs=[];
+  const axisJobs=(G,ax,base)=>{for(let len=G.length-1;len>=2;len--)for(let i=0;i+len<G.length;i++){const lo=G[i],hi=G[i+len];
+      for(let k=i+1;k<i+len;k++){const r=ax==='x'?{...base,x0:lo,x1:hi}:{...base,z0:lo,z1:hi};const c=CUT.chops.find(q=>q.ax===ax&&q.p===G[k]);const sp=_splitRegs(r,c);if(sp)jobs.push([r,c,sp]);}}};
+  // 1) 정렬 순서대로 끝까지 썰었을 때의 경로 (가장 흔한 순서) 2) 그 밖의 순서 조합
+  let regs=[{x0:0,x1:1,z0:0,z1:1}];[...X.slice(1,-1).map(p=>['x',p]),...Z.slice(1,-1).map(p=>['z',p])].forEach(([ax,p])=>{const c=CUT.chops.find(q=>q.ax===ax&&q.p===p);const nr=[];
+    regs.forEach(r=>{const sp=_splitRegs(r,c);if(sp){jobs.push([r,c,sp]);nr.push(...sp);}else nr.push(r);});regs=nr;});
+  axisJobs(X,'x',{z0:0,z1:1});for(let i=0;i+1<X.length;i++)axisJobs(Z,'z',{x0:X[i],x1:X[i+1]});
+  const ing=CUT.ing,key=r=>_pkey(ing.k,r.x0,r.x1,r.z0,r.z1);
+  const step=()=>{if(tok!==CUT.pfTok||CUT.ing!==ing)return;if(CUT.busy){CUT.pf=setTimeout(step,40);return;}
+    const live=new Set((CUT.meshes||[]).map(m=>key(m.userData.reg)));
+    let idx=jobs.findIndex(j=>live.has(key(j[0])));if(idx<0)idx=0;   // 지금 도마 위 조각부터
+    CUT.pfLeft=jobs.length;const j=jobs.splice(idx,1)[0];if(!j)return;try{presplitReg(ing,j[0],j[1],j[2][0],j[2][1]);}catch(e){console.warn('presplit',e);}CUT.pf=setTimeout(step,0);};
+  CUT.pf=setTimeout(step,30);}
+function flushPend(n){if(!CUT.pend||!CUT.pend.length)return;let did=false;
+  while(CUT.pend.length&&n-->0){const {m,c,pa,pb}=CUT.pend.shift();const i=CUT.meshes.indexOf(m);if(i<0)continue;
+    const [A,B]=splitPiece(CUT.ing,m,m.userData.reg,c,pa,pb);CUT.group.remove(m);
+    [[A,pa],[B,pb]].forEach(([q,r])=>{q.userData.reg=r;q.position.set(m.position.x-m.userData.cx+q.userData.cx,m.position.y-m.userData.cy+q.userData.cy,m.position.z-m.userData.cz+q.userData.cz);
+      q.rotation.y=(Math.random()-.5)*0.08;q.userData.tgt=q.position.clone();CUT.group.add(q);});
+    CUT.meshes.splice(i,1,A,B);did=true;}
+  if(did)layoutPieces(false);}
 function applyCut(c){
-  const np=[];CUT.pieces.forEach(p=>{if(c.ax==='x'&&p.x0<c.p&&p.x1>c.p){np.push({...p,x1:c.p},{...p,x0:c.p});}else if(c.ax==='z'&&p.z0<c.p&&p.z1>c.p){np.push({...p,z1:c.p},{...p,z0:c.p});}else np.push(p);});
-  CUT.pieces=np;rebuildPieces();          // positions = layout before this cut
+  // 칼선이 지나가는 조각만 둘로 나누고 나머지 조각 메시는 그대로 둠.
+  // 미리 계산된 조각은 바로 바꾸고, 아직 없는 조각은 다음 프레임부터 하나씩 나눔 (한 프레임에 몰아서 멈추지 않게)
+  flushPend(1e9);
+  const np=[],nm=[];CUT.meshes.forEach(m=>{const p=m.userData.reg,rr=_splitRegs(p,c),pa=rr&&rr[0],pb=rr&&rr[1];
+    if(!pa){np.push(p);nm.push(m);return;}
+    np.push(pa,pb);
+    const [ka,kb]=_cutKeys(CUT.ing,pa,pb);if(!(PIECE_CACHE.has(ka)&&PIECE_CACHE.has(kb))&&m.userData.raw){nm.push(m);CUT.pend.push({m,c,pa,pb});return;}
+    CUT.group.remove(m);const [A,B]=splitPiece(CUT.ing,m,p,c,pa,pb);
+    [[A,pa],[B,pb]].forEach(([q,r])=>{q.userData.reg=r;q.position.set(q.userData.cx,q.userData.cy,q.userData.cz);q.userData.tgt=q.position.clone();CUT.group.add(q);nm.push(q);});});
+  CUT.pieces=np;CUT.meshes=nm;layoutPieces(true);          // positions = layout before this cut
   CUT.done.push(c);
   CUT.meshes.forEach(m=>{m.rotation.y=(Math.random()-.5)*0.08;});
   layoutPieces(false);SFX.chop();CUT.shake=0.12;
@@ -954,7 +1014,7 @@ function applyCut(c){
   const left=CUT.chops.length-CUT.done.length;
   if(left>0){$('cutTip').textContent=`좋아! 남은 칼질 ${left}번`;if(remainingAxis()==='z'&&c.ax==='x'&&!CUT.chops.filter(q=>q.ax==='x'&&!CUT.done.includes(q)).length)$('cutTip').textContent=`이번엔 세로로! 남은 칼질 ${left}번`;}
   else{$('cutTip').textContent=`${CUT.ing.n} 손질 완료! 딱딱 잘 썰었다 👏`;CUT.finished=true;renderMethods();setTimeout(finishIng,650);}}
-function finishIng(){if(!$('cut').classList.contains('on'))return;
+function finishIng(){if(!$('cut').classList.contains('on'))return;flushPend(1e9);
   S.cut[CUT.ing.k]=CUT.method;
   CUT.flying=CUT.meshes.map((m,i)=>{const wp=new THREE.Vector3();m.getWorldPosition(wp);CUT.group.remove(m);m.position.copy(wp);scene.add(m);
     const a=Math.random()*Math.PI*2,r=Math.random()*0.55;const dst=new THREE.Vector3(BOWL_POS.x+Math.cos(a)*r,0.25+CUT.inBowl*0.006+Math.random()*0.15,BOWL_POS.z+Math.sin(a)*r*0.8);
@@ -970,6 +1030,7 @@ function cutFrame(dt){
   if(CUT.method&&!CUT.finished&&CUT.target){const gp=guidePos(CUT.target);if(CUT.target.ax==='x'){tx=CUT.group.position.x+gp;tz=0;}else{tz=gp;tx=CUT.group.position.x;}ty=0.75;}
   if(CUT.anim){CUT.anim.t+=dt;const t=CUT.anim.t;ty=t<0.08?0.75-t/0.08*0.63:0.12+(t-0.08)/0.15*0.63;if(t>=0.08&&!CUT.anim.hit){CUT.anim.hit=true;applyCut(CUT.anim.c);}if(t>0.23){CUT.anim=null;CUT.busy=false;}}
   k.position.x+=(tx-k.position.x)*Math.min(1,dt*18);k.position.z+=(tz-k.position.z)*Math.min(1,dt*18);k.position.y=CUT.anim?ty:k.position.y+(ty-k.position.y)*Math.min(1,dt*10);
+  flushPend(1);
   if(CUT.meshes)CUT.meshes.forEach(m=>m.position.lerp(m.userData.tgt,Math.min(1,dt*10)));
   if(CUT.flying){let all=true;CUT.flying.forEach(f=>{f.t+=dt*1.8;const t=Math.max(0,Math.min(1,f.t));if(t<1)all=false;f.m.position.lerpVectors(f.from,f.to,t);f.m.position.y+=Math.sin(t*Math.PI)*1.2;const s=f.s0+(f.s1-f.s0)*t;f.m.scale.setScalar(s);f.m.rotation.x+=dt*4*(1-t);});if(all)CUT.flying=null;}
   if(!CAMTW){if(CUT.shake>0){CUT.shake-=dt;camera.position.y=3.7+Math.sin(CUT.shake*90)*0.02;}else camera.position.y=3.7;}}
@@ -1262,7 +1323,7 @@ function platePhoto(){try{const pc=new THREE.PerspectiveCamera(30,4/3,0.05,20);c
 function enterEval(){
   scene=MK.scene;setCam([0.15,1.5,2.75],[0.15,1.12,0],40);
   // the kimchi she made, on grandma's plate
-  MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=m.clone();n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
+  MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=new THREE.Mesh(m.geometry,m.material);n.quaternion.copy(m.quaternion);n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
   shadowAll(MK.plateGrp);S.photo=platePhoto();
   // player in the video call
   setInset('p',24,512,196,188);PLAYER.root.rotation.y=0;PLAYER.setPose('phone');PLAYER.setExpr('worry');
@@ -1278,7 +1339,7 @@ function enterEval(){
   // reaction choice
   let rPose='thumbs',rExpr='laugh';
   if(c.stat.salty>=5){rPose='fan';rExpr='wince';}else if(c.stat.spicy>=6){rPose='fan';rExpr='spicy';}else if(c.stat.weird>=3){rPose='shock';rExpr='surprise';}else if(th<=2){rPose='think';rExpr='worry';}else if(th===3){rPose='thumbs';rExpr='smile';}
-  $('gBubble').innerHTML='<b class="jua" style="color:#3f6b4a">할머니</b><div class="line show">어디 보자~ 니가 뭔 짓을 해놨나 보자잉</div>';
+  $('gBubble').innerHTML='<b class="jua" style="color:#3f6b4a">할머니</b><div class="line show">어디 보자~ 우리 강아지가 뭘 만들었나~</div>';
   $('resCard').classList.remove('show');$('evalBtns').classList.remove('show');
   $('resName').textContent=name;$('resNew').innerHTML=isNew?'<span class="new">✨ 새로운 김치 발견!</span>':recipe?'<span class="new" style="background:#e7dccd;color:#7a5a3a">도감에 있는 김치</span>':'';
   $('resThumbs').innerHTML=[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');

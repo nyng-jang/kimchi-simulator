@@ -202,7 +202,7 @@ function platePhoto(){try{const pc=new THREE.PerspectiveCamera(30,4/3,0.05,20);c
 function enterEval(){
   scene=MK.scene;setCam([0.15,1.5,2.75],[0.15,1.12,0],40);
   // the kimchi she made, on grandma's plate
-  MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=m.clone();n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
+  MK.plateGrp.clear();(S.plate||[]).forEach((m,i)=>{const p=m.position;const n=new THREE.Mesh(m.geometry,m.material);n.quaternion.copy(m.quaternion);n.position.set(p.x*0.17,0.02+Math.max(0,p.y-0.2)*0.15+(i%5)*0.012,p.z*0.17);n.scale.setScalar(m.scale.x*0.2);MK.plateGrp.add(n);});
   shadowAll(MK.plateGrp);S.photo=platePhoto();
   // player in the video call
   setInset('p',24,512,196,188);PLAYER.root.rotation.y=0;PLAYER.setPose('phone');PLAYER.setExpr('worry');
@@ -218,7 +218,7 @@ function enterEval(){
   // reaction choice
   let rPose='thumbs',rExpr='laugh';
   if(c.stat.salty>=5){rPose='fan';rExpr='wince';}else if(c.stat.spicy>=6){rPose='fan';rExpr='spicy';}else if(c.stat.weird>=3){rPose='shock';rExpr='surprise';}else if(th<=2){rPose='think';rExpr='worry';}else if(th===3){rPose='thumbs';rExpr='smile';}
-  $('gBubble').innerHTML='<b class="jua" style="color:#3f6b4a">할머니</b><div class="line show">어디 보자~ 니가 뭔 짓을 해놨나 보자잉</div>';
+  $('gBubble').innerHTML='<b class="jua" style="color:#3f6b4a">할머니</b><div class="line show">어디 보자~ 우리 강아지가 뭘 만들었나~</div>';
   $('resCard').classList.remove('show');$('evalBtns').classList.remove('show');
   $('resName').textContent=name;$('resNew').innerHTML=isNew?'<span class="new">✨ 새로운 김치 발견!</span>':recipe?'<span class="new" style="background:#e7dccd;color:#7a5a3a">도감에 있는 김치</span>':'';
   $('resThumbs').innerHTML=[1,2,3,4,5].map(i=>`<span class="${i<=th?'':'off'}">👍</span>`).join('');

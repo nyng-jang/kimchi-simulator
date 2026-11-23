@@ -49,7 +49,7 @@ function pinkBurst(a,t,dur,ftype,f0,f1,q,vol,attack){const n=Math.floor(a.sample
   const g=a.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+dur*attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f).connect(g).connect(a.destination);s.start(t);s.stop(t+dur);}
 const SFX={chop(){noise(0.09,2400,1.2,0.9);tone(180,60,0.12,0.5);},plop(){tone(700,180,0.15,0.35);},squish(){noise(0.12,700,0.8,0.25);},ding(){tone(880,880,0.25,0.25,'triangle');setTimeout(()=>tone(1320,1320,0.35,0.2,'triangle'),120);},click(){tone(520,400,0.06,0.15,'triangle');},stir(total){const a=ac();if(!a)return;const m=3.5,T=total||2.4,t0=a.currentTime;for(let t=0;t<T;t+=0.3){pinkBurst(a,t0+t,0.6,'bandpass',220*m,480*m,1.5,1.6,0.5);pinkBurst(a,t0+t+0.15,0.3,'lowpass',900*m,300*m,2,0.4,0.3);}},boing(){tone(300,700,0.18,0.25,'triangle');}};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1600);}
-const hex=c=>new THREE.Color(c);
+const _HEXC=new Map();const hex=c=>{if(typeof c!=='string')return new THREE.Color(c);let v=_HEXC.get(c);if(!v){v=new THREE.Color(c);_HEXC.set(c,v);}return v.clone();}; // 색 문자열 해석 결과 재사용
 const rnd=(a,b)=>a+Math.random()*(b-a);
 
 /* =========================================================
