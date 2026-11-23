@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <title>할머니, 김치 어떻게 담가요?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -10,9 +11,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#2b2420;font-family:'Gowun Dodum',sans-serif;color:#3a2a1e;user-select:none;-webkit-user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;background:#2b2420;font-family:'Gowun Dodum',sans-serif;color:#3a2a1e;user-select:none;-webkit-user-select:none}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-#stage{position:relative;width:1280px;height:720px;transform-origin:center center;overflow:hidden;background:#efe2cc;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#stage{position:relative;flex:none;width:1280px;height:720px;transform-origin:center center;overflow:hidden;background:#efe2cc;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 #gl{position:absolute;inset:0;width:1280px;height:720px;display:block}
 .screen{position:absolute;inset:0;display:none;pointer-events:none}
 .screen.on{display:block}
@@ -123,7 +124,8 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 .dcard .taste{display:block;font-size:13px;color:#7a5a3a;margin-top:4px;line-height:1.35}
 /* dex */
 #dex{background:rgba(30,20,12,.72);z-index:50}
-#dex .box{position:absolute;left:90px;right:90px;top:50px;bottom:50px;background:#fff8ec;border-radius:24px;padding:0 30px 24px;overflow:auto}
+#dex .box{position:absolute;left:90px;right:90px;top:50px;bottom:50px;background:#fff8ec;border-radius:24px;padding:0 30px 24px;overflow:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+#stage.full{border-radius:0;box-shadow:none}
 #dex .dhead{position:sticky;top:0;z-index:3;background:#fff8ec;padding:22px 0 12px;margin-bottom:4px;border-bottom:2px solid #f0dfc8}
 #dex .dhead .cnt{margin:0}
 #dex h2.sub2{font-size:22px;margin:16px 0 10px}
@@ -387,8 +389,17 @@ function saveDex(){try{localStorage.setItem('kimchi-dex-v1',JSON.stringify(DEX))
    UTIL / AUDIO
    ========================================================= */
 const $=id=>document.getElementById(id);
-function fit(){const s=Math.min(innerWidth/1280,innerHeight/720)*0.98;$('stage').style.transform=`scale(${s})`;}
-addEventListener('resize',fit);fit();
+// 화면 크기에 맞춰 자동 맞춤. 세로 화면(폰)에서는 무대를 90° 돌려 가로로 꽉 채움
+const TAP=matchMedia('(pointer:coarse)').matches;
+const VIEW={s:1,rot:false};
+function fit(){const vw=innerWidth,vh=innerHeight,rot=vh>vw*1.05;
+  const m=TAP?1:0.98,s=(rot?Math.min(vh/1280,vw/720):Math.min(vw/1280,vh/720))*m;
+  VIEW.s=s;VIEW.rot=rot;const st=$('stage');st.style.transform=(rot?'rotate(90deg) ':'')+`scale(${s})`;
+  st.classList.toggle('full',TAP);
+  if(window.R){const pr=Math.max(1,Math.min(1.5,s*(devicePixelRatio||1)));if(Math.abs(R.getPixelRatio()-pr)>0.01)R.setPixelRatio(pr);}}
+// 화면 좌표 → 무대(1280×720) 좌표 (회전·배율 반영)
+function stagePt(e){let dx=e.clientX-innerWidth/2,dy=e.clientY-innerHeight/2;if(VIEW.rot){const t=dx;dx=dy;dy=-t;}return {x:dx/VIEW.s+640,y:dy/VIEW.s+360};}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));fit();
 let AC=null;function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
 addEventListener('pointerdown',ac);
 function noise(dur,freq,q,vol){const a=ac();if(!a)return;const b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(a.destination);s.start();}
@@ -415,7 +426,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
    ========================================================= */
 const canvas=$('gl');
 const R=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
-R.setPixelRatio(Math.min(devicePixelRatio||1,1.5));R.setSize(1280,720,false);
+R.setPixelRatio(Math.min(devicePixelRatio||1,1.5));R.setSize(1280,720,false);fit();
 R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
 const camera=new THREE.PerspectiveCamera(48,1280/720,0.1,100);
 let scene=null, frameFn=null, INSET=null;
@@ -833,7 +844,7 @@ function container(s){const src=SEAMODELS[s.k];if(!src)return containerProc(s);
 
 /* ---------- 3D raycast helper ---------- */
 const ray=new THREE.Raycaster(),mouseN=new THREE.Vector2();
-function setMouse(e){const r=canvas.getBoundingClientRect();mouseN.x=((e.clientX-r.left)/r.width)*2-1;mouseN.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouseN,camera);}
+function setMouse(e){const q=stagePt(e);mouseN.x=q.x/1280*2-1;mouseN.y=-(q.y/720)*2+1;ray.setFromCamera(mouseN,camera);}
 function planeHit(y){const p=new THREE.Plane(new THREE.Vector3(0,1,0),-y),v=new THREE.Vector3();return ray.ray.intersectPlane(p,v)?v:null;}
 function toScreen(v){const p=v.clone().project(camera);return {x:(p.x+1)/2*1280,y:(1-p.y)/2*720};}
 let pointerDown=false;
@@ -887,7 +898,7 @@ function renderMethods(){const started=CUT.done.length>0;
 function pickMethod(k){SFX.click();CUT.method=k;const m=METHOD[k];
   CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();
   if(!CUT.chops.length){$('cutTip').textContent='통째로 넣기! 그대로 그릇에 담아요';setTimeout(finishIng,500);CUT.finished=true;renderMethods();}
-  else $('cutTip').textContent=`칼을 점선에 맞추고 클릭! (스페이스바도 OK) · 남은 칼질 ${CUT.chops.length}번`;}
+  else $('cutTip').textContent=(TAP?'점선을 톡 터치하면 썰어요!':'칼을 점선에 맞추고 클릭! (스페이스바도 OK)')+` · 남은 칼질 ${CUT.chops.length}번`;}
 function secW(ing){return modelZRange(ing);}
 function secH(ing){return modelTop(ing);}
 function guidePos(c){const ing=CUT.ing,[zmin,zmax]=secW(ing);const doneX=CUT.done.filter(d=>d.ax==='x'),doneZ=CUT.done.filter(d=>d.ax==='z'),gap=0.13;
@@ -1268,6 +1279,8 @@ function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent
   $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b><span class="taste">${r.taste||''}</span></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
   $('dexRecent').innerHTML=DEX.recent.length?DEX.recent.map(r=>`<div class="dcard"><img src="${r.photo||''}"><b style="font-size:15px">${r.n}</b></div>`).join(''):'<span class="hint">아직 만든 김치가 없어요</span>';
   $('dex').classList.add('on');}
+if(TAP){const tx=(sel,t)=>{const el=document.querySelector(sel);if(el)el.textContent=t;};
+  tx('#introDlg .next','터치해서 계속 ▶');tx('#seasonTip','통을 터치하면 한 숟갈씩 들어가요!');tx('#mixTip','손가락으로 누른 채 빙글빙글 버무려요!');tx('#store h2','김치를 어디에 담을까? 터치해서 골라요');}
 $('btnDexFloat').onclick=()=>{SFX.click();openDex();};
 $('btnHome').onclick=()=>{SFX.click();resetRound();go('title');};
 $('btnDexClose').onclick=()=>{SFX.click();$('dex').classList.remove('on');};

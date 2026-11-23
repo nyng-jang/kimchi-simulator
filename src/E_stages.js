@@ -1,6 +1,6 @@
 /* ---------- 3D raycast helper ---------- */
 const ray=new THREE.Raycaster(),mouseN=new THREE.Vector2();
-function setMouse(e){const r=canvas.getBoundingClientRect();mouseN.x=((e.clientX-r.left)/r.width)*2-1;mouseN.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouseN,camera);}
+function setMouse(e){const q=stagePt(e);mouseN.x=q.x/1280*2-1;mouseN.y=-(q.y/720)*2+1;ray.setFromCamera(mouseN,camera);}
 function planeHit(y){const p=new THREE.Plane(new THREE.Vector3(0,1,0),-y),v=new THREE.Vector3();return ray.ray.intersectPlane(p,v)?v:null;}
 function toScreen(v){const p=v.clone().project(camera);return {x:(p.x+1)/2*1280,y:(1-p.y)/2*720};}
 let pointerDown=false;
@@ -54,7 +54,7 @@ function renderMethods(){const started=CUT.done.length>0;
 function pickMethod(k){SFX.click();CUT.method=k;const m=METHOD[k];
   CUT.chops=[...m.x.map(p=>({ax:'x',p})),...m.z.map(p=>({ax:'z',p}))];CUT.done=[];renderMethods();drawGuides();
   if(!CUT.chops.length){$('cutTip').textContent='통째로 넣기! 그대로 그릇에 담아요';setTimeout(finishIng,500);CUT.finished=true;renderMethods();}
-  else $('cutTip').textContent=`칼을 점선에 맞추고 클릭! (스페이스바도 OK) · 남은 칼질 ${CUT.chops.length}번`;}
+  else $('cutTip').textContent=(TAP?'점선을 톡 터치하면 썰어요!':'칼을 점선에 맞추고 클릭! (스페이스바도 OK)')+` · 남은 칼질 ${CUT.chops.length}번`;}
 function secW(ing){return modelZRange(ing);}
 function secH(ing){return modelTop(ing);}
 function guidePos(c){const ing=CUT.ing,[zmin,zmax]=secW(ing);const doneX=CUT.done.filter(d=>d.ax==='x'),doneZ=CUT.done.filter(d=>d.ax==='z'),gap=0.13;

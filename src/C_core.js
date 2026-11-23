@@ -18,8 +18,17 @@ function saveDex(){try{localStorage.setItem('kimchi-dex-v1',JSON.stringify(DEX))
    UTIL / AUDIO
    ========================================================= */
 const $=id=>document.getElementById(id);
-function fit(){const s=Math.min(innerWidth/1280,innerHeight/720)*0.98;$('stage').style.transform=`scale(${s})`;}
-addEventListener('resize',fit);fit();
+// 화면 크기에 맞춰 자동 맞춤. 세로 화면(폰)에서는 무대를 90° 돌려 가로로 꽉 채움
+const TAP=matchMedia('(pointer:coarse)').matches;
+const VIEW={s:1,rot:false};
+function fit(){const vw=innerWidth,vh=innerHeight,rot=vh>vw*1.05;
+  const m=TAP?1:0.98,s=(rot?Math.min(vh/1280,vw/720):Math.min(vw/1280,vh/720))*m;
+  VIEW.s=s;VIEW.rot=rot;const st=$('stage');st.style.transform=(rot?'rotate(90deg) ':'')+`scale(${s})`;
+  st.classList.toggle('full',TAP);
+  if(window.R){const pr=Math.max(1,Math.min(1.5,s*(devicePixelRatio||1)));if(Math.abs(R.getPixelRatio()-pr)>0.01)R.setPixelRatio(pr);}}
+// 화면 좌표 → 무대(1280×720) 좌표 (회전·배율 반영)
+function stagePt(e){let dx=e.clientX-innerWidth/2,dy=e.clientY-innerHeight/2;if(VIEW.rot){const t=dx;dx=dy;dy=-t;}return {x:dx/VIEW.s+640,y:dy/VIEW.s+360};}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));fit();
 let AC=null;function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
 addEventListener('pointerdown',ac);
 function noise(dur,freq,q,vol){const a=ac();if(!a)return;const b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(a.destination);s.start();}
@@ -46,7 +55,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
    ========================================================= */
 const canvas=$('gl');
 const R=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
-R.setPixelRatio(Math.min(devicePixelRatio||1,1.5));R.setSize(1280,720,false);
+R.setPixelRatio(Math.min(devicePixelRatio||1,1.5));R.setSize(1280,720,false);fit();
 R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
 const camera=new THREE.PerspectiveCamera(48,1280/720,0.1,100);
 let scene=null, frameFn=null, INSET=null;

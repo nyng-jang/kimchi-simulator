@@ -246,6 +246,8 @@ function openDex(){const f=Object.keys(DEX.found).length;$('dexCnt').textContent
   $('dexGrid').innerHTML=RECIPES.map(r=>{const d=DEX.found[r.k];return d?`<div class="dcard"><img src="${d.photo||''}"><b>${r.n}</b><span class="taste">${r.taste||''}</span></div>`:`<div class="dcard lock"><div class="q">?</div><b>???</b><span>힌트: ${r.hint}</span></div>`;}).join('');
   $('dexRecent').innerHTML=DEX.recent.length?DEX.recent.map(r=>`<div class="dcard"><img src="${r.photo||''}"><b style="font-size:15px">${r.n}</b></div>`).join(''):'<span class="hint">아직 만든 김치가 없어요</span>';
   $('dex').classList.add('on');}
+if(TAP){const tx=(sel,t)=>{const el=document.querySelector(sel);if(el)el.textContent=t;};
+  tx('#introDlg .next','터치해서 계속 ▶');tx('#seasonTip','통을 터치하면 한 숟갈씩 들어가요!');tx('#mixTip','손가락으로 누른 채 빙글빙글 버무려요!');tx('#store h2','김치를 어디에 담을까? 터치해서 골라요');}
 $('btnDexFloat').onclick=()=>{SFX.click();openDex();};
 $('btnHome').onclick=()=>{SFX.click();resetRound();go('title');};
 $('btnDexClose').onclick=()=>{SFX.click();$('dex').classList.remove('on');};
