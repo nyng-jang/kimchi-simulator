@@ -28,6 +28,8 @@ function fit(){const vw=innerWidth,vh=innerHeight,rot=vh>vw*1.05;
   if(window.R){const pr=Math.max(1,Math.min(1.5,s*(devicePixelRatio||1)));if(Math.abs(R.getPixelRatio()-pr)>0.01)R.setPixelRatio(pr);}}
 // 화면 좌표 → 무대(1280×720) 좌표 (회전·배율 반영)
 function stagePt(e){let dx=e.clientX-innerWidth/2,dy=e.clientY-innerHeight/2;if(VIEW.rot){const t=dx;dx=dy;dy=-t;}return {x:dx/VIEW.s+640,y:dy/VIEW.s+360};}
+if(TAP)addEventListener('pointerdown',function fs(){removeEventListener('pointerdown',fs);const d=document.documentElement;
+  try{const r=d.requestFullscreen&&d.requestFullscreen({navigationUI:'hide'});if(r&&r.then)r.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}});
 addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));fit();
 let AC=null;function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
 addEventListener('pointerdown',ac);

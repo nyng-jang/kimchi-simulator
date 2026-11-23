@@ -178,6 +178,31 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 #toast{position:absolute;top:150px;left:50%;transform:translateX(-50%) scale(.8);background:#ffcf3f;color:#5a3000;font-family:'Do Hyeon';font-size:24px;padding:10px 26px;border-radius:30px;opacity:0;transition:all .3s;z-index:60;pointer-events:none;box-shadow:0 5px 16px rgba(0,0,0,.25)}
 #toast.show{opacity:1;transform:translateX(-50%) scale(1)}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Do Hyeon';font-size:28px;color:#7a3b1f;background:#efe2cc;z-index:99}
+/* ── 폰(터치) 화면: 글씨와 버튼 키우기 ── */
+#stage.full #steps{transform:translateX(-50%) scale(1.35);transform-origin:top center;left:calc(50% - 60px)}
+#stage.full #steps span:not(.cur){font-size:0;gap:0;padding:4px}#stage.full #steps span:not(.cur) i{font-size:12px}
+#stage.full #btnDexFloat{transform:scale(1.3);transform-origin:top right}
+#stage.full #btnHome,#stage.full #btnCutBack{transform:scale(1.3);transform-origin:top left;top:84px!important}
+#stage.full .bottomR,#stage.full #eval .btns{transform:scale(1.3);transform-origin:bottom right}
+#stage.full .sideBtns{transform:scale(1.3);transform-origin:top right;top:120px}
+#stage.full .bubble{font-size:26px}
+#stage.full .tip{font-size:25px;top:96px}#stage.full #cutTip{top:146px}#stage.full #mixTip{top:150px!important}#stage.full #seasonTip{top:72px;font-size:21px;padding:6px 16px}
+#stage.full .lbl{font-size:18px}
+#stage.full .dlg p{font-size:31px}#stage.full .dlg .who{font-size:24px}#stage.full .dlg .next{font-size:19px}
+#stage.full .coachB{max-width:520px}#stage.full #cutCoach{bottom:160px}
+#stage.full .methods{transform:translateX(-36%) scale(1.3);transform-origin:bottom center}
+#stage.full .queue{transform:translateX(-50%) scale(1.3);transform-origin:top center;top:84px}
+#stage.full #ingPanel h3{font-size:25px}#stage.full .card b{font-size:21px}#stage.full .card i{font-size:14px}
+#stage.full .selBar .cnt{font-size:25px}#stage.full .selBar .btn{font-size:28px}
+#stage.full #store h2{font-size:38px}
+#stage.full #gBubble{width:400px;font-size:22px;left:140px}
+#stage.full #resCard{transform-origin:top right;top:78px}
+#stage.full #resCard.show{transform:scale(1.3)}
+#stage.full #eval .btns{right:auto;left:250px;transform-origin:bottom left}
+#stage.full #resCard .rc.warn li{font-size:13px}
+#stage.full #resCard .rc.chipsRc{display:none}
+#stage.full #dex .box{left:30px;right:30px;top:24px;bottom:24px}
+#stage.full .dcard b{font-size:24px}#stage.full .dcard .taste,#stage.full .dcard span{font-size:17px}#stage.full .dcard .how{font-size:15px}
 </style>
 </head>
 <body>
@@ -246,7 +271,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
       <div class="rc"><h4>맛 분석</h4><div class="bars bars2" id="resBars"></div></div>
       <div class="rc items"><h4>평가 항목</h4><div id="resScore"></div></div>
       <div class="rc" id="resWarn"></div>
-      <div class="rc"><h4>사용 재료</h4><div class="chips" id="resDetail"></div></div>
+      <div class="rc chipsRc"><h4>사용 재료</h4><div class="chips" id="resDetail"></div></div>
     </div>
     <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>

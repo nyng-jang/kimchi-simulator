@@ -178,6 +178,31 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
 #toast{position:absolute;top:150px;left:50%;transform:translateX(-50%) scale(.8);background:#ffcf3f;color:#5a3000;font-family:'Do Hyeon';font-size:24px;padding:10px 26px;border-radius:30px;opacity:0;transition:all .3s;z-index:60;pointer-events:none;box-shadow:0 5px 16px rgba(0,0,0,.25)}
 #toast.show{opacity:1;transform:translateX(-50%) scale(1)}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Do Hyeon';font-size:28px;color:#7a3b1f;background:#efe2cc;z-index:99}
+/* ── 폰(터치) 화면: 글씨와 버튼 키우기 ── */
+#stage.full #steps{transform:translateX(-50%) scale(1.35);transform-origin:top center;left:calc(50% - 60px)}
+#stage.full #steps span:not(.cur){font-size:0;gap:0;padding:4px}#stage.full #steps span:not(.cur) i{font-size:12px}
+#stage.full #btnDexFloat{transform:scale(1.3);transform-origin:top right}
+#stage.full #btnHome,#stage.full #btnCutBack{transform:scale(1.3);transform-origin:top left;top:84px!important}
+#stage.full .bottomR,#stage.full #eval .btns{transform:scale(1.3);transform-origin:bottom right}
+#stage.full .sideBtns{transform:scale(1.3);transform-origin:top right;top:120px}
+#stage.full .bubble{font-size:26px}
+#stage.full .tip{font-size:25px;top:96px}#stage.full #cutTip{top:146px}#stage.full #mixTip{top:150px!important}#stage.full #seasonTip{top:72px;font-size:21px;padding:6px 16px}
+#stage.full .lbl{font-size:18px}
+#stage.full .dlg p{font-size:31px}#stage.full .dlg .who{font-size:24px}#stage.full .dlg .next{font-size:19px}
+#stage.full .coachB{max-width:520px}#stage.full #cutCoach{bottom:160px}
+#stage.full .methods{transform:translateX(-36%) scale(1.3);transform-origin:bottom center}
+#stage.full .queue{transform:translateX(-50%) scale(1.3);transform-origin:top center;top:84px}
+#stage.full #ingPanel h3{font-size:25px}#stage.full .card b{font-size:21px}#stage.full .card i{font-size:14px}
+#stage.full .selBar .cnt{font-size:25px}#stage.full .selBar .btn{font-size:28px}
+#stage.full #store h2{font-size:38px}
+#stage.full #gBubble{width:400px;font-size:22px;left:140px}
+#stage.full #resCard{transform-origin:top right;top:78px}
+#stage.full #resCard.show{transform:scale(1.3)}
+#stage.full #eval .btns{right:auto;left:250px;transform-origin:bottom left}
+#stage.full #resCard .rc.warn li{font-size:13px}
+#stage.full #resCard .rc.chipsRc{display:none}
+#stage.full #dex .box{left:30px;right:30px;top:24px;bottom:24px}
+#stage.full .dcard b{font-size:24px}#stage.full .dcard .taste,#stage.full .dcard span{font-size:17px}#stage.full .dcard .how{font-size:15px}
 </style>
 </head>
 <body>
@@ -246,7 +271,7 @@ button{font-family:'Do Hyeon',sans-serif;cursor:pointer;border:none}
       <div class="rc"><h4>맛 분석</h4><div class="bars bars2" id="resBars"></div></div>
       <div class="rc items"><h4>평가 항목</h4><div id="resScore"></div></div>
       <div class="rc" id="resWarn"></div>
-      <div class="rc"><h4>사용 재료</h4><div class="chips" id="resDetail"></div></div>
+      <div class="rc chipsRc"><h4>사용 재료</h4><div class="chips" id="resDetail"></div></div>
     </div>
     <div class="btns" id="evalBtns"><button class="btn" id="btnAgain">다시 만들기</button></div>
   </div>
@@ -331,7 +356,7 @@ const STORE=Object.fromEntries(STORES.map(s=>[s.k,s]));
 // 숨은 레시피 (위에서부터 먼저 맞는 것 하나)
 const has=(c,k)=>c.sel.includes(k), sp=(c,k)=>c.season[k]||0, weirdCnt=c=>c.sel.filter(k=>ING[k].g==='weird').length+SEAS.filter(s=>s.weird&&sp(c,s.k)>0).length;
 const RECIPES=[
- {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'굴 겉절이? 오메, 이건 수육 삶아야 쓰겄다. 제대로네!'},
+ {k:'nothing',taste:'풋풋한 생야채 맛. 아삭하지만 그게 전부예요.',n:'아무 맛도 안 나는 김치',hint:'양념을 깜빡하면…?',test:c=>Object.values(c.season).every(v=>!v),line:'양념은 어디 팔아먹었냐? 이건 그냥 생풀이여 생풀!'},
  {k:'pizza',taste:'고소한 치즈와 마요의 크리미함, 끝에 살짝 김치 향.',n:'피자 김치',hint:'치즈와 하얀 소스',test:c=>has(c,'cheese')&&sp(c,'mayo')>0,line:'이게 김치여 피자여! 이탈리아 할매가 들으면 울겄다'},
  {k:'colamelon',taste:'달콤한 수박에 탄산이 톡톡 터지는 여름 맛.',n:'콜라 수박 화채 김치',hint:'여름 과일 + 톡 쏘는 음료',test:c=>has(c,'watermelon')&&sp(c,'cola')>0,line:'김치에서 탄산이 터지네? 할미 틀니 날아갈 뻔했다!'},
  {k:'dessert',taste:'과즙 가득 수박과 쫀득한 피스타치오가 만난 디저트 맛.',n:'여름밤 디저트 김치',hint:'여름 과일과 쿠키가 만나면…?',test:c=>has(c,'watermelon')&&has(c,'dujjon'),line:'수박에 과자를 버무려? 니 할아버지가 보면 뒷목 잡고 쓰러지겄다'},
@@ -342,7 +367,7 @@ const RECIPES=[
  {k:'baek',taste:'맑고 시원한 국물에 배의 은은한 단맛.',n:'뽀얀 백김치',hint:'배를 넣고 빨간 가루는 빼고',test:c=>has(c,'cabbage')&&has(c,'pear')&&sp(c,'gochu')===0&&weirdCnt(c)===0,line:'흠, 백김치는 제법이네. 이건 할미가 인정한다잉'},
  {k:'kkakdugi',taste:'아삭한 무에 새우젓 감칠맛이 밴 시원 매콤한 맛.',n:'아삭 깍두기',hint:'무를 주사위처럼',test:c=>has(c,'radish')&&c.cut.radish==='kkak'&&sp(c,'gochu')>=2&&sp(c,'shrimp')>=1&&weirdCnt(c)===0,line:'깍두기는 새우젓이 생명인 거 알긴 아는구나. 잘했다잉'},
  {k:'saengchae',taste:'새콤 매콤한 양념에 아삭한 무채, 밥도둑 맛.',n:'새콤 무생채',hint:'무를 가늘게',test:c=>has(c,'radish')&&c.cut.radish==='chae'&&sp(c,'gochu')>=1&&weirdCnt(c)===0,line:'무생채는 그럭저럭 봐줄 만하네. 밥 한 공기는 먹겄다'},
- {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이에 수육 한 점이면 끝나는 거여!'},
+ {k:'oyster',n:'굴 듬뿍 겉절이',hint:'바다 재료 + 바로 먹기',test:c=>has(c,'oyster')&&c.store==='now'&&sp(c,'gochu')>=1,line:'굴 겉절이? 오메, 이건 수육 삶아야 쓰겄다. 제대로네!'},
  {k:'mukeunji',taste:'푹 익어 깊어진 신맛과 감칠맛, 시간이 만든 맛.',n:'장인의 묵은지',hint:'항아리에 오래오래',test:c=>has(c,'cabbage')&&c.cut.cabbage==='pogi'&&c.store==='onggi'&&sp(c,'gochu')>=2&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&weirdCnt(c)===0,line:'묵은지까지 할 줄 알어? 이건 할미도 할 말이 없다잉'},
  {k:'classic',taste:'매콤 짭짤한 양념에 시원한 배추, 할머니 손맛 그대로.',n:'할머니 인정 정통 배추김치',hint:'배추, 무, 파, 고춧가루, 젓갈, 마늘…',test:c=>has(c,'cabbage')&&has(c,'radish')&&(has(c,'leek')||has(c,'mustard')||has(c,'chive'))&&sp(c,'gochu')>=2&&sp(c,'gochu')<=5&&(sp(c,'shrimp')+sp(c,'fishsauce'))>=1&&sp(c,'garlic')>=1&&c.stat.salty<=5&&weirdCnt(c)===0,line:'오메! 할미 김치를 몰래 훔쳐 갔냐? 똑같다 똑같어!'},
 ];
@@ -399,6 +424,8 @@ function fit(){const vw=innerWidth,vh=innerHeight,rot=vh>vw*1.05;
   if(window.R){const pr=Math.max(1,Math.min(1.5,s*(devicePixelRatio||1)));if(Math.abs(R.getPixelRatio()-pr)>0.01)R.setPixelRatio(pr);}}
 // 화면 좌표 → 무대(1280×720) 좌표 (회전·배율 반영)
 function stagePt(e){let dx=e.clientX-innerWidth/2,dy=e.clientY-innerHeight/2;if(VIEW.rot){const t=dx;dx=dy;dy=-t;}return {x:dx/VIEW.s+640,y:dy/VIEW.s+360};}
+if(TAP)addEventListener('pointerdown',function fs(){removeEventListener('pointerdown',fs);const d=document.documentElement;
+  try{const r=d.requestFullscreen&&d.requestFullscreen({navigationUI:'hide'});if(r&&r.then)r.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{});}catch(e){}});
 addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));fit();
 let AC=null;function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
 addEventListener('pointerdown',ac);
